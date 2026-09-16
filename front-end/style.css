@@ -1,0 +1,19 @@
+body {
+  background-color: #f4f1ea;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+}
+
+section {
+  margin: 20px 0;
+  padding: 16px;
+}
+
+h1:hover { color: #e74c3c; }              /* canvia de color en passar-hi el ratolí */
+section:first-child { border-left: 4px solid #2c3e50; }
