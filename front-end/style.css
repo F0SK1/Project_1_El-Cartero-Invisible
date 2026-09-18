@@ -15,5 +15,5 @@ section {
   padding: 16px;
 }
 
-h1:hover { color: #e74c3c; }              /* canvia de color en passar-hi el ratolí */
+h1:hover { color: #e74c3c; } /* canvia de color en passar-hi el ratolí */
 section:first-child { border-left: 4px solid #2c3e50; }
