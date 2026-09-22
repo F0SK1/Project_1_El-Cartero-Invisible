@@ -1,5 +1,6 @@
-const { fireEvent } = require('@testing-library/dom');
-require('@testing-library/jest-dom');
+import { jest } from '@jest/globals';
+import { fireEvent } from '@testing-library/dom';
+import '@testing-library/jest-dom';
 
 test('el botó mostra un alert amb "Hola, món!"', () => {
   document.body.innerHTML = `<button id="btnSaluda">Saluda</button>`;
