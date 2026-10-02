@@ -42,6 +42,7 @@ section:first-child {
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: box-shadow 0.3s ease;
+  float: left; width: 45%; margin: 2.5%;
 }
 
 .carta:hover {
@@ -62,7 +63,7 @@ main {
 }
 
 #btnSaluda, #btnAfegir {
-  background-color: rgb(231, 231, 231);
+  background-color: rgb(231, 231, 231); 
   width: 100px;
   height: 50px;
   display: block;
@@ -83,7 +84,24 @@ main {
   box-shadow: -2px 10px 40px gray;
 }
 
+#buzon:hover {
+  box-shadow: -2px 10px 40px gray;
+}
+
 footer {
   text-align: center;
   text-decoration: underline;
+}
+
+#buzon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    color: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 100;
+    background-color: rgb(187, 186, 186); 
+    transition: box-shadow 0.3s ease;
 }
