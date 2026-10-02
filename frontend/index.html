@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Cartero Invisible</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Afegit type="module" per permetre 'export' en el script.js -->
+    <script type="module" src="script.js"></script>
   </head>
 
   <body>
     <div class="container">
-      <script src="script.js" defer></script>
 
       <header>
         <h1 id="titolPrincipal">El Cartero Invisible</h1>
@@ -19,13 +20,8 @@
 
         <p class="info">Benvingut al teu buzón virtual</p>
 
-        <div id="contenidorCartes">
-
-          <div class="carta">
-            <h3>De: Maria</h3>
-            <p>Hola, com estàs? T'escric des del passat.</p>
-          </div>
-        </div>
+        <!-- Contenidor on es renderitzaran dinàmicament les cartes -->
+        <div id="contenidorCartes"></div>
 
         <section id="llistatCartes">
           <!-- de moment buit: aquí aniran les cartes -->

@@ -12,13 +12,17 @@ function saluda() {
 // Funció per renderitzar les cartes al DOM
 function renderitzarCartes(cartes) {
   const contenidor = document.querySelector("#contenidorCartes");
-  
   if (!contenidor) return;
 
   // Buidem el contenidor per no acumular elements anteriors
   contenidor.innerHTML = "";
 
-  // Generem cada carta utilitzant manipulació segura del DOM
+  // 1. Creem i afegim el comptador primer utilitzant manipulació segura del DOM
+  const pPendents = document.createElement("p");
+  pPendents.textContent = `Cartes pendents: ${cartes.length}`;
+  contenidor.appendChild(pPendents);
+
+  // 2. Generem cada carta utilitzant manipulació segura del DOM
   cartes.forEach((carta) => {
     // Creem el div principal amb la classe 'carta'
     const divCarta = document.createElement("div");
@@ -60,17 +64,12 @@ function inicialitzar() {
     titol.setAttribute("data-role", "banner");
   }
 
-  const contenidor = document.querySelector("#contenidorCartes");
-  if (contenidor) {
-    contenidor.innerHTML += "<p>Cartes pendents: 0</p>";
-  }
-
   const info = document.querySelector(".info");
   if (info) {
     info.style.color = "#2c3e50";
   }
 
-  // Renderització inicial
+  // Renderització inicial de les cartes i del comptador
   renderitzarCartes(cartesSimulades);
 
   // Escoltador d'esdeveniments per al botó d'afegir
