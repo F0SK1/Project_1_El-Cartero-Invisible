@@ -24,6 +24,7 @@ First Project/
 └── frontend/                # Client web (HTML, CSS, JS)
     ├── node_modules/        # Mòduls i dependències de Node.js instal·lats
     ├── test/                # Proves automàtiques del client (Jest)
+    │   └── saluda.test.js   # Test de verificació de la funció de salutació en JS
     ├── index.html           # Estructura semàntica de la pàgina principal
     ├── package.json         # Configuració i dependències de Node.js (Jest, Testing Library)
     ├── package-lock.json    # Control de versions de dependències de Node.js
