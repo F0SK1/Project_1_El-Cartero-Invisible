@@ -1,6 +1,6 @@
 # El Cartero Invisible - Setmana 1: Obrim l'oficina de correus
 
-Aquest repositori conté la implementació de la **Setmana 3** del projecte **"El Cartero Invisible"**. Durant aquesta setmana s'ha configurat l'entorn de desenvolupament complet, establint les bases del projecte amb una arquitectura client-servidor, un backend en FastAPI, un frontend semàntic amb HTML/CSS/JS i els entorns de proves automàtiques configurats tant per al client com per al servidor[cite: 1, 5, 7, 11, 12].
+Aquest repositori conté la implementació de la **Setmana 3** del projecte **"El Cartero Invisible"**. Durant aquesta setmana s'ha configurat l'entorn de desenvolupament complet, establint les bases del projecte amb una arquitectura client-servidor, un backend en FastAPI, un frontend semàntic amb HTML/CSS/JS i els entorns de proves automàtiques configurats tant per al client com per al servidor.
 
 ---
 
