@@ -1,48 +1,70 @@
 <!DOCTYPE html>
 <html lang="ca">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Cartero Invisible</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Afegit type="module" per permetre 'export' en el script.js -->
-    <script type="module" src="script.js"></script>
-  </head>
 
-  <body>
-    <div class="container">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Cartero Invisible</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 
-      <header>
-        <h1 id="titolPrincipal">El Cartero Invisible</h1>
-      </header>
+<body>
+  <div class="container">
 
-      <main>
+    <header>
+      <h1 id="titolPrincipal">El Cartero Invisible</h1>
+    </header>
 
-        <p class="info">Benvingut al teu buzón virtual</p>
+    <main>
 
-        <!-- Contenidor on es renderitzaran dinàmicament les cartes -->
-        <div id="contenidorCartes"></div>
+      <p class="info">Benvingut al teu buzón virtual</p>
 
-        <section id="llistatCartes">
-          <!-- de moment buit: aquí aniran les cartes -->
-        </section>
+      <!-- Contenidor on es renderitzaran dinàmicament les cartes en format targeta -->
+      <div id="contenidorCartes"></div>
 
-        <section id="formulariCarta">
-          <!-- de moment buit: aquí anirà el formulari -->
-        </section>
+      <!-- Formulari per crear cartes -->
+      <form id="formCarta">
+        <input type="text" id="remitent" placeholder="El teu nom" required>
+        <input type="text" id="destinatari" placeholder="A qui va dirigida?" required>
+        <textarea id="contingut" placeholder="Escriu la teva carta..." required></textarea>
+        <input type="text" id="personatge" placeholder="A quin personatge escrius? (ex: Einstein)">
+        <button type="submit">Enviar carta</button>
+      </form>
 
-        <button id="btnAfegir">Afegir Carta</button>
+      <button id="btnAfegir">Afegir Carta</button>
+      <button id="btnSaluda">Saluda'm!</button>
 
-        <button id="btnSaluda">Saluda'm!</button>
+      <!-- Botó per alternar la visibilitat de la taula -->
+      <button id="btnToggleTaula">Mostrar taula</button>
 
-        <button id="buzon">📬</button>
+      <!-- Secció del registre en forma de taula -->
+      <section id="seccioTaula">
+        <table id="taulaCartes" style="display: none;">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Remitent</th>
+              <th>Destinatari</th>
+              <th>Contingut (resum)</th>
+              <th>Accions</th>
+            </tr>
+          </thead>
+          <tbody id="cosTaulaCartes">
+            <!-- Les files es generaran dinàmicament des de JavaScript -->
+          </tbody>
+        </table>
+      </section>
 
-      </main>
+      <button id="buzon">📬</button>
 
-      <footer>
-        <p>&copy; 2026 El Cartero Invisible</p>
-      </footer>
-      
-    </div>
-  </body>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 El Cartero Invisible</p>
+    </footer>
+
+  </div>
+  <script type="module" src="script.js"></script>
+</body>
+
 </html>

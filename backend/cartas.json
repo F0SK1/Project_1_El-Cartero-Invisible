@@ -1,0 +1,37 @@
+[
+  {
+    "remitent": "Faouzi",
+    "destinatari": "Faouzi",
+    "contingut": "Un rocket?",
+    "personatge": "Faouzi",
+    "id": 1
+  },
+  {
+    "remitent": "Ali",
+    "destinatari": "Faouzi",
+    "contingut": "Me dejas el rs6 este finde?",
+    "personatge": "Faouzi",
+    "id": 3
+  },
+  {
+    "remitent": "Victor",
+    "destinatari": "Faouzi",
+    "contingut": "Ki dize fauziii",
+    "personatge": "Faouzi",
+    "id": 4
+  },
+  {
+    "remitent": "Faouzi",
+    "destinatari": "Faouzi",
+    "contingut": "Hola Faouzi",
+    "personatge": "Faouzi",
+    "id": 5
+  },
+  {
+    "remitent": "Raul",
+    "destinatari": "Faouzi",
+    "contingut": "Tens un 10 en tots el examens",
+    "personatge": "Faouzi",
+    "id": 6
+  }
+]

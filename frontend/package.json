@@ -1,24 +1,20 @@
 {
-  "name": "servidor",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
-  "keywords": [],
-  "type": "module",
   "devDependencies": {
-    "@testing-library/dom": "^10.4.2",
-    "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/user-event": "^14.6.7",
-    "jest": "^30.5.2",
-    "jest-environment-jsdom": "^30.5.2"
+    "@jest/globals": "^29.7.0",
+    "@testing-library/dom": "^9.3.4",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/user-event": "^14.5.2",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
   },
   "jest": {
-    "testEnvironment": "jsdom"
-  },
-  "directories": {
-    "test": "test"
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ]
   }
 }
