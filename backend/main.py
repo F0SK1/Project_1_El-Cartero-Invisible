@@ -93,6 +93,25 @@ def crear_carta(carta_input: CartaCreate):
     guardar_cartes(cartes)
     return nova_carta
 
+# Endpoint PUT /cartas/{id}: actualitza una carta existent
+@app.put("/cartas/{id}", status_code=status.HTTP_200_OK)
+def actualitzar_carta(id: int, carta_input: CartaCreate):
+    cartes = cargar_cartes()
+    index = next((i for i, c in enumerate(cartes) if c.get("id") == id), None)
+
+    if index is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Carta no trobada"
+        )
+
+    carta_actualitzada = carta_input.model_dump()
+    carta_actualitzada["id"] = id  # l'ID no es pot canviar
+
+    cartes[index] = carta_actualitzada
+    guardar_cartes(cartes)
+    return carta_actualitzada
+
 # Endpoint DELETE /cartas/{id}
 @app.delete("/cartas/{id}", status_code=status.HTTP_200_OK)
 def eliminar_carta(id: int):

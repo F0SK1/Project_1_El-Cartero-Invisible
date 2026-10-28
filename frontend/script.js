@@ -1,7 +1,60 @@
+const API_URL = "http://127.0.0.1:8000/cartas";
+
+// ---------------------------------------------------------------------------
+// Indicador de càrrega + bloqueig de botons durant les peticions fetch
+// ---------------------------------------------------------------------------
+let peticionsEnCurs = 0;
+
+function obtenirIndicadorCarrega() {
+  if (typeof document === "undefined") return null;
+  let indicador = document.querySelector("#indicadorCarrega");
+  if (!indicador) {
+    indicador = document.createElement("p");
+    indicador.id = "indicadorCarrega";
+    indicador.className = "indicador-carrega";
+    indicador.textContent = "Carregant…";
+    indicador.style.display = "none";
+    const contenidor = document.querySelector("#contenidorCartes");
+    if (contenidor && contenidor.parentNode) {
+      contenidor.parentNode.insertBefore(indicador, contenidor);
+    } else if (document.body) {
+      document.body.appendChild(indicador);
+    }
+  }
+  return indicador;
+}
+
+function canviarEstatCarrega(carregant) {
+  if (typeof document === "undefined") return;
+
+  const indicador = obtenirIndicadorCarrega();
+  if (indicador) {
+    indicador.style.display = carregant ? "block" : "none";
+  }
+  document.querySelectorAll("button").forEach((b) => {
+    b.disabled = carregant;
+  });
+}
+
+function iniciarCarrega() {
+  peticionsEnCurs++;
+  if (peticionsEnCurs === 1) canviarEstatCarrega(true);
+}
+
+function acabarCarrega() {
+  peticionsEnCurs = Math.max(0, peticionsEnCurs - 1);
+  if (peticionsEnCurs === 0) canviarEstatCarrega(false);
+}
+
+// ---------------------------------------------------------------------------
+// Peticions al backend
+// ---------------------------------------------------------------------------
+
 // Funció per carregar les cartes des del servidor backend (GET)
 async function carregarCartes() {
+  iniciarCarrega();
   try {
-    const response = await fetch("http://127.0.0.1:8000/cartas");
+    const response = await fetch(API_URL);
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
@@ -10,7 +63,7 @@ async function carregarCartes() {
     return cartes;
   } catch (error) {
     console.error("Error en carregar les cartes des del servidor:", error);
-    
+
     // Actualitza el DOM amb el missatge d'error
     const contenidor = document.querySelector("#contenidorCartes");
     if (contenidor) {
@@ -20,12 +73,163 @@ async function carregarCartes() {
     // Mostra l'alert esperat pels tests
     alert("No s'han pogut carregar les cartes. Comprova que el servidor està en marxa.");
     return [];
+  } finally {
+    acabarCarrega();
   }
+}
+
+// Funció per crear una carta nova (POST)
+async function crearCarta(dades) {
+  iniciarCarrega();
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dades)
+    });
+    return response.ok;
+  } catch (error) {
+    console.error("Error en la petició POST:", error);
+    return null;
+  } finally {
+    acabarCarrega();
+  }
+}
+
+// Funció per actualitzar una carta existent (PUT)
+async function actualitzarCarta(id, dades) {
+  iniciarCarrega();
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dades)
+    });
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    return true;
+  } catch (error) {
+    console.error("Error en la petició PUT:", error);
+    alert("Error en actualitzar la carta al servidor.");
+    return false;
+  } finally {
+    acabarCarrega();
+  }
+}
+
+// Funció per eliminar una carta (DELETE) i refrescar la llista
+async function eliminarCarta(id) {
+  if (id === undefined || id === null || id === "") return false;
+
+  iniciarCarrega();
+  let correcte = false;
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: "DELETE"
+    });
+    if (response.ok) {
+      correcte = true;
+    } else {
+      alert("Error en eliminar la carta del servidor.");
+    }
+  } catch (error) {
+    console.error("Error en la petició DELETE:", error);
+    alert("Error de connexió en eliminar la carta.");
+  } finally {
+    acabarCarrega();
+  }
+
+  if (correcte) {
+    await carregarCartes();
+  }
+  return correcte;
 }
 
 function saluda() {
   alert("Hola, món!");
 }
+
+// ---------------------------------------------------------------------------
+// Edició inline
+// ---------------------------------------------------------------------------
+
+function crearCampEdicio(etiqueta, nom, valor, multilinia = false) {
+  const label = document.createElement("label");
+  label.textContent = etiqueta + " ";
+
+  const camp = multilinia
+    ? document.createElement("textarea")
+    : document.createElement("input");
+  if (!multilinia) camp.type = "text";
+  camp.name = nom;
+  camp.value = valor || "";
+  camp.className = "camp-edicio";
+
+  label.appendChild(camp);
+  return label;
+}
+
+// Substitueix el contingut de la carta per un formulari preomplert
+function mostrarFormulariEdicio(divCarta, carta) {
+  divCarta.innerHTML = "";
+
+  const form = document.createElement("form");
+  form.className = "form-edicio";
+  form.dataset.id = carta.id;
+
+  form.appendChild(crearCampEdicio("Remitent:", "remitent", carta.remitent));
+  form.appendChild(crearCampEdicio("Destinatari:", "destinatari", carta.destinatari));
+  form.appendChild(crearCampEdicio("Contingut:", "contingut", carta.contingut, true));
+  form.appendChild(crearCampEdicio("Personatge:", "personatge", carta.personatge));
+
+  const btnDesar = document.createElement("button");
+  btnDesar.type = "submit";
+  btnDesar.textContent = "Desar";
+  btnDesar.className = "btn-desar";
+
+  const btnCancelar = document.createElement("button");
+  btnCancelar.type = "button";
+  btnCancelar.textContent = "Cancel·lar";
+  btnCancelar.className = "btn-cancelar";
+  btnCancelar.addEventListener("click", () => {
+    carregarCartes();
+  });
+
+  const accions = document.createElement("div");
+  accions.className = "carta-acciones";
+  accions.appendChild(btnDesar);
+  accions.appendChild(btnCancelar);
+  form.appendChild(accions);
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const dades = {
+      remitent: form.elements["remitent"].value.trim(),
+      destinatari: form.elements["destinatari"].value.trim(),
+      contingut: form.elements["contingut"].value.trim(),
+      personatge: form.elements["personatge"].value.trim()
+    };
+
+    // Validació: cap camp pot estar buit
+    if (Object.values(dades).some((valor) => valor === "")) {
+      alert("Tots els camps són obligatoris!");
+      return;
+    }
+
+    const correcte = await actualitzarCarta(carta.id, dades);
+    if (correcte) {
+      await carregarCartes();
+    }
+  });
+
+  divCarta.appendChild(form);
+}
+
+// ---------------------------------------------------------------------------
+// Renderitzat
+// ---------------------------------------------------------------------------
 
 // Funció per renderitzar les cartes al DOM (format targetes)
 function renderitzarCartes(cartes = []) {
@@ -63,6 +267,16 @@ function renderitzarCartes(cartes = []) {
     spanId.textContent = "ID: " + carta.id;
     spanId.setAttribute("data-id", carta.id);
 
+    // Botó d'editar
+    const btnEditar = document.createElement("button");
+    btnEditar.type = "button";
+    btnEditar.textContent = "Editar";
+    btnEditar.className = "btn-editar";
+    btnEditar.dataset.id = carta.id;
+    btnEditar.addEventListener("click", () => {
+      mostrarFormulariEdicio(divCarta, carta);
+    });
+
     // Botó d'eliminar blindat amb type="button"
     const btnEliminar = document.createElement("button");
     btnEliminar.type = "button";
@@ -73,6 +287,7 @@ function renderitzarCartes(cartes = []) {
     const filaAcciones = document.createElement("div");
     filaAcciones.className = "carta-acciones";
     filaAcciones.appendChild(spanId);
+    filaAcciones.appendChild(btnEditar);
     filaAcciones.appendChild(btnEliminar);
 
     divCarta.appendChild(h3Remitent);
@@ -136,7 +351,10 @@ function actualitzarVistes(cartes) {
   renderitzarTaula(cartes);
 }
 
-// Funció principal d'inicialització
+// ---------------------------------------------------------------------------
+// Inicialització
+// ---------------------------------------------------------------------------
+
 function inicialitzar() {
   const boto = document.getElementById("btnSaluda");
   if (boto) {
@@ -195,28 +413,19 @@ function inicialitzar() {
         return;
       }
 
-      try {
-        const response = await fetch("http://127.0.0.1:8000/cartas", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            remitent: remitent,
-            destinatari: destinatari || "Desconegut",
-            contingut: contingut,
-            personatge: personatge || "Desconegut"
-          })
-        });
+      const resultat = await crearCarta({
+        remitent: remitent,
+        destinatari: destinatari || "Desconegut",
+        contingut: contingut,
+        personatge: personatge || "Desconegut"
+      });
 
-        if (response.ok) {
-          await carregarCartes();
-          formCarta.reset();
-        } else {
-          alert("Error en enviar la carta al servidor.");
-        }
-      } catch (error) {
-        console.error("Error en la petició POST:", error);
+      if (resultat === true) {
+        await carregarCartes();
+        formCarta.reset();
+      } else if (resultat === false) {
+        alert("Error en enviar la carta al servidor.");
+      } else {
         alert("Error de connexió en enviar la carta.");
       }
     });
@@ -239,23 +448,7 @@ function inicialitzar() {
   document.addEventListener("click", async (event) => {
     const btnEliminar = event.target.closest(".btn-eliminar");
     if (btnEliminar) {
-      const idAEliminar = btnEliminar.dataset.id;
-      if (!idAEliminar) return;
-
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/cartas/${idAEliminar}`, {
-          method: "DELETE"
-        });
-
-        if (response.ok) {
-          await carregarCartes();
-        } else {
-          alert("Error en eliminar la carta del servidor.");
-        }
-      } catch (error) {
-        console.error("Error en la petició DELETE:", error);
-        alert("Error de connexió en eliminar la carta.");
-      }
+      await eliminarCarta(btnEliminar.dataset.id);
     }
   });
 }
@@ -270,5 +463,8 @@ export {
   renderitzarTaula,
   renderitzarTaulaCartes,
   carregarCartes,
+  crearCarta,
+  actualitzarCarta,
+  eliminarCarta,
   actualitzarVistes
 };

@@ -6,6 +6,7 @@ global.alert = jest.fn();
 
 beforeEach(() => {
     jest.clearAllMocks();
+    document.body.innerHTML = '<div id="contenidorCartes"></div>';
     document.getElementById('contenidorCartes').innerHTML = '';
 });
 

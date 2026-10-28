@@ -8,6 +8,8 @@
   --color-boto: rgb(231, 231, 231);
   --color-btn-eliminar: #4e3938;
   --color-btn-eliminar-hover: #a87670;
+  --color-btn-editar: #2c3e50;
+  --color-btn-editar-hover: #4f6a85;
   --color-buzon: rgb(187, 186, 186);
   --color-taula-borde: #ddd;
   --color-taula-par: #f9f9f9;
@@ -95,6 +97,7 @@ section:first-child {
   width: calc(50% - 10px);
   margin: 5px;
   position: relative;
+  overflow-wrap: anywhere; /* evita que textos llargs trenquin la targeta */
 }
 
 /* Pseudo-element ::before per afegir un sobre a cada carta */
@@ -110,7 +113,13 @@ section:first-child {
 .carta-acciones {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* L'ID queda a l'esquerra i els botons a la dreta */
+.carta-acciones span {
+  margin-right: auto;
 }
 
 /* Estil per al missatge d'error */
@@ -121,6 +130,14 @@ section:first-child {
   padding: 10px;
   border-radius: 6px;
   font-weight: bold;
+}
+
+/* Indicador de càrrega */
+.indicador-carrega {
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-principal);
+  margin: 6px 0;
 }
 
 /* --- 4. ESTILS DEL FORMULARI (Estil simple i acollidor) --- */
@@ -184,7 +201,7 @@ section:first-child {
   box-shadow: -2px 6px 20px rgba(231, 76, 60, 0.3);
 }
 
-/* --- 5. ESTILS DELS BOTONS SECUNDARIS --- */
+/* --- 5. ESTILS DELS BOTONS --- */
 #btnSaluda, #btnAfegir, #btnToggleTaula {
   background-color: var(--color-boto); 
   width: 140px;
@@ -197,23 +214,98 @@ section:first-child {
   transition: box-shadow 0.3s ease;
 }
 
-#btnSaluda:hover, #btnAfegir:hover, #btnToggleTaula:hover, #buzon:hover, .btn-eliminar:hover {
+#btnSaluda:hover, #btnAfegir:hover, #btnToggleTaula:hover, #buzon:hover, .btn-eliminar:hover, .btn-editar:hover {
   box-shadow: -2px 10px 40px gray;
 }
 
-.btn-eliminar {
-  background-color: var(--color-btn-eliminar);
+.btn-eliminar,
+.btn-editar,
+.btn-desar,
+.btn-cancelar {
   color: white;
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.btn-eliminar {
+  background-color: var(--color-btn-eliminar);
 }
 
 .btn-eliminar:hover {
   background-color: var(--color-btn-eliminar-hover);
   box-shadow: -2px 10px 40px var(--color-btn-eliminar-hover);
+}
+
+.btn-editar,
+.btn-desar {
+  background-color: var(--color-btn-editar);
+}
+
+.btn-editar:hover,
+.btn-desar:hover {
+  background-color: var(--color-btn-editar-hover);
+  box-shadow: -2px 10px 40px var(--color-btn-editar-hover);
+}
+
+.btn-cancelar {
+  background-color: #7f8c8d;
+}
+
+.btn-cancelar:hover {
+  background-color: #95a5a6;
+}
+
+/* Botons deshabilitats mentre hi ha una petició en curs */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* --- 5b. FORMULARI D'EDICIÓ INLINE --- */
+.form-edicio {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-edicio label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-principal);
+}
+
+.camp-edicio {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background-color: #faf9f6;
+  color: #333;
+}
+
+.camp-edicio:focus {
+  outline: none;
+  border-color: var(--color-principal);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.12);
+}
+
+textarea.camp-edicio {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.form-edicio .carta-acciones {
+  justify-content: flex-end;
 }
 
 /* --- 6. ESTILS DE LA TAULA I TRUNCAT DE TEXT --- */
@@ -289,4 +381,120 @@ footer {
   text-decoration: underline;
   margin-top: 20px;
   padding: 10px 0;
+}
+
+/* ==========================================================================
+   8. DISSENY RESPONSIU (MEDIA QUERIES)
+   ========================================================================== */
+
+/* --- ESCRIPTORI (min-width: 1025px): 3 columnes --- */
+@media (min-width: 1025px) {
+  html, body {
+    padding: 10px 40px;
+  }
+
+  .container {
+    max-width: 1200px;
+    padding: 0 20px;
+  }
+
+  .carta {
+    width: calc(33.333% - 10px);
+  }
+}
+
+/* --- TAULETA (769px - 1024px): 2 columnes --- */
+@media (min-width: 769px) and (max-width: 1024px) {
+  html, body {
+    padding: 10px 30px;
+  }
+
+  .container {
+    max-width: 900px;
+    padding: 0 10px;
+  }
+
+  .carta {
+    width: calc(50% - 10px);
+  }
+}
+
+/* --- MÒBIL (max-width: 768px): 1 columna --- */
+@media (max-width: 768px) {
+  html, body {
+    padding: 8px 12px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0;
+    /* espai perquè el buzón fix no tapi el peu de pàgina */
+    padding-bottom: 80px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  section {
+    padding: 8px;
+  }
+
+  /* Cartes a tota l'amplada */
+  .carta {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  /* Formulari: camps i botons al 100% */
+  #formCarta {
+    padding: 12px 0;
+  }
+
+  #formCarta input[type="text"],
+  #formCarta textarea {
+    font-size: 1rem; /* evita el zoom automàtic a iOS */
+  }
+
+  #formCarta button[type="submit"],
+  #btnSaluda,
+  #btnAfegir,
+  #btnToggleTaula {
+    width: 100%;
+    align-self: stretch;
+    height: 44px; /* àrea tàctil còmoda */
+  }
+
+  /* Botons d'acció de les cartes més fàcils de tocar */
+  .btn-eliminar,
+  .btn-editar,
+  .btn-desar,
+  .btn-cancelar {
+    padding: 10px 14px;
+  }
+
+  .form-edicio .carta-acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Taula amb scroll horitzontal si no hi cap */
+  #seccioTaula {
+    overflow-x: auto;
+  }
+
+  .contingut-cell {
+    max-width: 120px;
+  }
+
+  /* Buzón: més petit i centrat a la part inferior */
+  #buzon {
+    right: auto;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    padding: 10px 14px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+  }
 }
