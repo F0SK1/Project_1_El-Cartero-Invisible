@@ -1,5 +1,8 @@
 const API_URL = "http://127.0.0.1:8000/cartas";
 
+// Últimes cartes rebudes del servidor (per numerar les cartes de prova)
+let cartesActuals = [];
+
 // ---------------------------------------------------------------------------
 // Indicador de càrrega + bloqueig de botons durant les peticions fetch
 // ---------------------------------------------------------------------------
@@ -151,6 +154,48 @@ function saluda() {
 }
 
 // ---------------------------------------------------------------------------
+// Tema clar / fosc (localStorage)
+// ---------------------------------------------------------------------------
+
+// Aplica el tema fosc en carregar la pàgina si estava guardat
+export function aplicarTemaGuardat() {
+  if (localStorage.getItem("tema") === "fosc") {
+    document.body.classList.add("tema-fosc");
+  }
+}
+
+// Alterna la classe tema-fosc al <body> i en guarda la preferència
+export function canviarTema() {
+  document.body.classList.toggle("tema-fosc");
+  const esFosc = document.body.classList.contains("tema-fosc");
+  localStorage.setItem("tema", esFosc ? "fosc" : "clar");
+}
+
+// ---------------------------------------------------------------------------
+// Últim personatge (localStorage) i esborrany de la carta (sessionStorage)
+// ---------------------------------------------------------------------------
+
+export function guardarUltimPersonatge(personatge) {
+  localStorage.setItem("ultimPersonatge", personatge);
+}
+
+export function preomplirUltimPersonatge() {
+  const ultim = localStorage.getItem("ultimPersonatge");
+  const camp = document.querySelector("#personatge");
+  if (ultim && camp) camp.value = ultim;
+}
+
+export function guardarCartaEnProces(text) {
+  sessionStorage.setItem("cartaEnProces", text);
+}
+
+export function recuperarCartaEnProces() {
+  const text = sessionStorage.getItem("cartaEnProces");
+  const camp = document.querySelector("#contingut");
+  if (text && camp) camp.value = text;
+}
+
+// ---------------------------------------------------------------------------
 // Edició inline
 // ---------------------------------------------------------------------------
 
@@ -170,9 +215,9 @@ function crearCampEdicio(etiqueta, nom, valor, multilinia = false) {
   return label;
 }
 
-// Substitueix el contingut de la carta per un formulari preomplert
-function mostrarFormulariEdicio(divCarta, carta) {
-  divCarta.innerHTML = "";
+// Substitueix el contingut de la carta (o fila de taula) per un formulari preomplert
+function mostrarFormulariEdicio(elementContenidor, carta) {
+  elementContenidor.innerHTML = "";
 
   const form = document.createElement("form");
   form.className = "form-edicio";
@@ -224,7 +269,15 @@ function mostrarFormulariEdicio(divCarta, carta) {
     }
   });
 
-  divCarta.appendChild(form);
+  // Si l'element és una fila de la taula (TR), embolcallem el formulari en un TD
+  if (elementContenidor.tagName === "TR") {
+    const tdForm = document.createElement("td");
+    tdForm.colSpan = 5;
+    tdForm.appendChild(form);
+    elementContenidor.appendChild(tdForm);
+  } else {
+    elementContenidor.appendChild(form);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -323,12 +376,28 @@ function renderitzarTaula(cartes = []) {
     tdContingut.textContent = carta.contingut || "";
     tdContingut.className = "contingut-cell";
 
+    // Cel·la d'accions de la taula
     const tdAccions = document.createElement("td");
+
+    // 1. Botó d'editar
+    const btnEditar = document.createElement("button");
+    btnEditar.type = "button";
+    btnEditar.textContent = "Editar";
+    btnEditar.className = "btn-editar";
+    btnEditar.dataset.id = carta.id;
+    btnEditar.addEventListener("click", () => {
+      mostrarFormulariEdicio(tr, carta);
+    });
+
+    // 2. Botó d'eliminar
     const btnEliminar = document.createElement("button");
     btnEliminar.type = "button";
     btnEliminar.textContent = "Eliminar";
     btnEliminar.className = "btn-eliminar";
     btnEliminar.dataset.id = carta.id;
+
+    // S'afegeix primer el deEditar i després el d'Eliminar
+    tdAccions.appendChild(btnEditar);
     tdAccions.appendChild(btnEliminar);
 
     tr.appendChild(tdId);
@@ -347,6 +416,7 @@ const renderitzarTaulaCartes = renderitzarTaula;
 
 // Funció auxiliar per actualitzar targetes i taula simultàniament
 function actualitzarVistes(cartes) {
+  cartesActuals = Array.isArray(cartes) ? cartes : [];
   renderitzarCartes(cartes);
   renderitzarTaula(cartes);
 }
@@ -356,6 +426,22 @@ function actualitzarVistes(cartes) {
 // ---------------------------------------------------------------------------
 
 function inicialitzar() {
+  // Tema: aplica el tema guardat i enllaça el botó
+  aplicarTemaGuardat();
+  const btnTema = document.querySelector("#btnTema");
+  if (btnTema) {
+    btnTema.type = "button";
+    btnTema.addEventListener("click", canviarTema);
+  }
+
+  // Últim personatge i esborrany de la carta
+  preomplirUltimPersonatge();
+  recuperarCartaEnProces();
+  const campContingut = document.querySelector("#contingut");
+  if (campContingut) {
+    campContingut.addEventListener("input", (e) => guardarCartaEnProces(e.target.value));
+  }
+
   const boto = document.getElementById("btnSaluda");
   if (boto) {
     boto.type = "button";
@@ -421,8 +507,13 @@ function inicialitzar() {
       });
 
       if (resultat === true) {
+        // Carta enviada correctament: desa l'últim personatge i esborra l'esborrany
+        guardarUltimPersonatge(personatge);
+        sessionStorage.removeItem("cartaEnProces");
+
         await carregarCartes();
         formCarta.reset();
+        preomplirUltimPersonatge(); // torna a preomplir el personatge després del reset
       } else if (resultat === false) {
         alert("Error en enviar la carta al servidor.");
       } else {
@@ -432,14 +523,26 @@ function inicialitzar() {
   }
 
   // Enllaç del botó #btnAfegir per activar l'enviament del formulari #formCarta
+  // Botó #btnAfegir: afegeix una carta de prova (com a la setmana 3)
   const btnAfegir = document.querySelector("#btnAfegir");
-  if (btnAfegir && formCarta) {
+  if (btnAfegir) {
     btnAfegir.type = "button";
-    btnAfegir.addEventListener("click", () => {
-      if (typeof formCarta.requestSubmit === "function") {
-        formCarta.requestSubmit();
+    btnAfegir.addEventListener("click", async () => {
+      const numero = cartesActuals.length + 1;
+
+      const resultat = await crearCarta({
+        remitent: "Carter " + numero,
+        destinatari: "Desconegut",
+        contingut: "Aquesta carta s'acaba de crear dinàmicament!",
+        personatge: "Desconegut"
+      });
+
+      if (resultat === true) {
+        await carregarCartes();
+      } else if (resultat === false) {
+        alert("Error en enviar la carta al servidor.");
       } else {
-        formCarta.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+        alert("Error de connexió en enviar la carta.");
       }
     });
   }

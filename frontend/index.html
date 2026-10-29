@@ -14,6 +14,8 @@
 
     <header>
       <h1 id="titolPrincipal">El Cartero Invisible</h1>
+      <!-- Botó per canviar entre tema clar i fosc -->
+      <button id="btnTema" type="button">🌓 Canviar tema</button>
     </header>
 
     <main>
@@ -32,11 +34,13 @@
         <button type="submit">Enviar carta</button>
       </form>
 
-      <button id="btnAfegir">Afegir Carta</button>
-      <button id="btnSaluda">Saluda'm!</button>
-
-      <!-- Botó per alternar la visibilitat de la taula -->
-      <button id="btnToggleTaula">Mostrar taula</button>
+      <!-- Botons secundaris en una sola fila -->
+      <div class="barra-botons">
+        <button id="btnAfegir">Afegir Carta</button>
+        <button id="btnSaluda">Saluda'm!</button>
+        <!-- Botó per alternar la visibilitat de la taula -->
+        <button id="btnToggleTaula">Mostrar taula</button>
+      </div>
 
       <!-- Secció del registre en forma de taula -->
       <section id="seccioTaula">

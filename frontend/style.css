@@ -1,19 +1,99 @@
-/* --- 1. DEFINICIÓ DE VARIABLES GLOBALS --- */
+/* --- 1. DEFINICIÓ DE VARIABLES GLOBALS (tema clar) --- */
 :root {
-  --color-fons-body: #ebebeb;
-  --color-principal: #2c3e50;
-  --color-hover: #e74c3c;
+  /* Fons i superfícies */
+  --color-fons-body: #f3f6fb;          /* blau-gris molt suau, no enlluerna */
   --color-fons-carta: #ffffff;
-  --color-borde: #ccc;
-  --color-boto: rgb(231, 231, 231);
-  --color-btn-eliminar: #4e3938;
-  --color-btn-eliminar-hover: #a87670;
-  --color-btn-editar: #2c3e50;
-  --color-btn-editar-hover: #4f6a85;
-  --color-buzon: rgb(187, 186, 186);
-  --color-taula-borde: #ddd;
-  --color-taula-par: #f9f9f9;
-  --color-taula-hover: #f1f1f1;
+  --color-fons-camp: #f8fafc;
+  --color-fons-focus: #ffffff;         /* fons dels camps quan tenen el focus */
+  --color-borde: #dbe3ee;
+  --color-taula-borde: #e5ebf3;
+  --color-taula-par: #f8fafc;
+  --color-taula-hover: #eef4fb;
+
+  /* Text */
+  --color-text: #1e293b;
+  --color-text-suau: #64748b;
+  --color-text-placeholder: #94a3b8;
+
+  /* Accent (blau cel, com a la pàgina fosca) */
+  --color-principal: #0284c7;          /* títols */
+  --color-accent: #0284c7;
+  --color-accent-hover: #0369a1;
+  --color-accent-suau: #e0f2fe;
+  --color-anell-focus: rgba(2, 132, 199, 0.22);
+
+  /* Capçalera de la taula */
+  --color-capcalera-taula: #0284c7;
+  --color-text-capcalera: #ffffff;
+
+  /* Botons */
+  --color-boto: #ffffff;
+  --color-btn-eliminar: #be3a3a;
+  --color-btn-eliminar-hover: #9b2c2c;
+  --color-btn-editar: #0284c7;
+  --color-btn-editar-hover: #0369a1;
+  --color-btn-cancelar: #64748b;
+  --color-btn-cancelar-hover: #475569;
+
+  /* Estat */
+  --color-error: #b91c1c;
+  --color-error-fons: #fef2f2;
+
+  /* Ombres i radis */
+  --ombra-suau: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  --ombra-mitja: 0 10px 30px -10px rgba(15, 23, 42, 0.25);
+  --radi: 12px;
+  --radi-petit: 8px;
+}
+
+/* --- 1b. TEMA FOSC ---
+   S'activa quan el JS afegeix la classe "tema-fosc" al <body>.
+   Només cal redefinir les variables: tota la resta d'estils les reutilitza. */
+body.tema-fosc {
+  color-scheme: dark; /* barres de scroll i controls natius en mode fosc */
+
+  /* Fons i superfícies */
+  --color-fons-body: #0b1220;
+  --color-fons-carta: #0f192e;
+  --color-fons-camp: #0b1426;
+  --color-fons-focus: #101c33;
+  --color-borde: #1e2a44;
+  --color-taula-borde: #1e2a44;
+  --color-taula-par: #0c1528;
+  --color-taula-hover: #15233f;
+
+  /* Text */
+  --color-text: #e8eefb;
+  --color-text-suau: #8fa1c0;
+  --color-text-placeholder: #6b7d9e;
+
+  /* Accent */
+  --color-principal: #e8eefb;
+  --color-accent: #38bdf8;
+  --color-accent-hover: #7dd3fc;
+  --color-accent-suau: #0c2a3d;
+  --color-anell-focus: rgba(56, 189, 248, 0.28);
+
+  /* Capçalera de la taula */
+  --color-capcalera-taula: #0c4a6e;
+  --color-text-capcalera: #e0f2fe;
+
+  /* Botons */
+  --color-boto: #0f192e;
+  --color-btn-eliminar: #c24545;
+  --color-btn-eliminar-hover: #a93838;
+  --color-btn-editar: #0284c7;
+  --color-btn-editar-hover: #0369a1;
+  --color-btn-cancelar: #64748b;
+  --color-btn-cancelar-hover: #7b8aa0;
+
+  /* Estat */
+  --color-error: #fca5a5;
+  --color-error-fons: #2a1215;
+
+  /* Ombres */
+  --ombra-suau: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
+  --ombra-mitja: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
 }
 
 /* --- 2. CONFIGURACIÓ GENERAL --- */
@@ -29,8 +109,11 @@ html, body {
 
 body {
   background-color: var(--color-fons-body);
+  color: var(--color-text);
   display: flex;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease; /* canvi de tema suau */
 }
 
 .container {
@@ -44,18 +127,58 @@ body {
 }
 
 header {
+  position: relative; /* perquè el botó de tema es posicioni respecte a la capçalera */
   text-align: center;
+  padding: 24px 0 8px;
+}
+
+/* Botó per canviar de tema (a dalt a la dreta) */
+#btnTema {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  background-color: var(--color-boto);
+  color: var(--color-principal);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 8px 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radi-petit);
+  cursor: pointer;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, color 0.25s ease,
+              background-color 0.3s ease, transform 0.25s ease;
+}
+
+#btnTema:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: var(--ombra-mitja);
+  transform: translateY(-1px);
+}
+
+/* Etiqueta petita en majúscules sobre el títol */
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
 }
 
 h1 {
   color: var(--color-principal);
-  font-size: 2.2rem;
-  text-decoration: underline;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin: 5px 0;
+  transition: color 0.25s ease;
 }
 
-h1:hover { 
-  color: var(--color-hover); 
+h1:hover {
+  color: var(--color-accent);
 }
 
 main {
@@ -64,13 +187,16 @@ main {
   flex-direction: column;
 }
 
+.info {
+  text-align: center;
+  color: var(--color-text-suau);
+  font-size: 1.05rem;
+  margin: 6px 0 18px;
+}
+
 section {
   margin: 10px 0;
   padding: 10px;
-}
-
-section:first-child { 
-  border-left: 4px solid var(--color-principal); 
 }
 
 /* --- 3. TARGETES DE CARTES I PSEUDO-ELEMENT ::BEFORE --- */
@@ -87,17 +213,41 @@ section:first-child {
   margin: 5px 0 10px 0;
 }
 
+.cartes-pendents {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.missatge-buit {
+  color: var(--color-text-suau);
+}
+
 .carta {
   border: 1px solid var(--color-borde);
-  padding: 12px;
-  border-radius: 8px;
+  padding: 16px;
+  border-radius: var(--radi);
   background-color: var(--color-fons-carta);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: box-shadow 0.3s ease;
+  box-shadow: var(--ombra-suau);
+  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease,
+              background-color 0.3s ease;
   width: calc(50% - 10px);
   margin: 5px;
   position: relative;
   overflow-wrap: anywhere; /* evita que textos llargs trenquin la targeta */
+}
+
+.carta h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: var(--color-principal);
+}
+
+.carta p {
+  margin: 0 0 12px;
+  color: var(--color-text-suau);
 }
 
 /* Pseudo-element ::before per afegir un sobre a cada carta */
@@ -107,7 +257,9 @@ section:first-child {
 }
 
 .carta:hover {
-  box-shadow: 10px 10px 20px gray;
+  border-color: var(--color-accent);
+  box-shadow: var(--ombra-mitja);
+  transform: translateY(-2px);
 }
 
 .carta-acciones {
@@ -120,102 +272,134 @@ section:first-child {
 /* L'ID queda a l'esquerra i els botons a la dreta */
 .carta-acciones span {
   margin-right: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-placeholder);
 }
 
 /* Estil per al missatge d'error */
 .error-missatge {
-  color: #d9534f;
-  background-color: #fdf7f7;
-  border: 1px solid #d9534f;
-  padding: 10px;
-  border-radius: 6px;
-  font-weight: bold;
+  color: var(--color-error);
+  background-color: var(--color-error-fons);
+  border: 1px solid var(--color-error);
+  padding: 10px 14px;
+  border-radius: var(--radi-petit);
+  font-weight: 600;
 }
 
 /* Indicador de càrrega */
 .indicador-carrega {
   text-align: center;
   font-weight: 600;
-  color: var(--color-principal);
+  color: var(--color-accent);
   margin: 6px 0;
 }
 
-/* --- 4. ESTILS DEL FORMULARI (Estil simple i acollidor) --- */
+/* --- 4. ESTILS DEL FORMULARI (compacte: graella de 2 columnes) --- */
 #formCarta {
-  padding: 16px 20px;
-  margin: 15px 0;
-  display: flex;
-  flex-direction: column;
+  background-color: var(--color-fons-carta);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radi);
+  box-shadow: var(--ombra-suau);
+  padding: 16px;
+  margin: 10px auto 14px;
+  width: 100%;
+  max-width: 720px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 #formCarta input[type="text"],
 #formCarta textarea {
   width: 100%;
   padding: 9px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radi-petit);
   font-family: inherit;
   font-size: 0.95rem;
-  background-color: #faf9f6; /* Tono crema molt suau */
-  color: #333;
-  transition: all 0.2s ease;
+  background-color: var(--color-fons-camp);
+  color: var(--color-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 #formCarta input[type="text"]::placeholder,
 #formCarta textarea::placeholder {
-  color: #999;
+  color: var(--color-text-placeholder);
 }
 
 #formCarta input[type="text"]:focus,
 #formCarta textarea:focus {
   outline: none;
-  border-color: var(--color-principal);
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.12);
+  border-color: var(--color-accent);
+  background-color: var(--color-fons-focus);
+  box-shadow: 0 0 0 3px var(--color-anell-focus);
 }
 
+/* El textarea ocupa les dues columnes i és més baix */
 #formCarta textarea {
+  grid-column: 1 / -1;
   resize: vertical;
-  min-height: 70px;
+  min-height: 64px;
+  height: 64px;
 }
 
+/* Botó principal: al costat del camp "personatge" */
 #formCarta button[type="submit"] {
-  background-color: var(--color-boto);
-  color: var(--color-principal);
-  border: 1px solid var(--color-borde);
-  padding: 8px 20px;
-  border-radius: 6px;
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  padding: 9px 20px;
+  border-radius: var(--radi-petit);
+  font-family: inherit;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  align-self: center; /* Queda centrat i alineat amb la resta de botons */
-  transition: all 0.3s ease;
-  margin-top: 4px;
+  align-self: stretch;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 #formCarta button[type="submit"]:hover {
-  background-color: var(--color-hover);
-  color: white;
-  border-color: var(--color-hover);
-  box-shadow: -2px 6px 20px rgba(231, 76, 60, 0.3);
+  background-color: var(--color-accent-hover);
+  box-shadow: 0 8px 20px -6px rgba(2, 132, 199, 0.55);
+  transform: translateY(-1px);
 }
 
 /* --- 5. ESTILS DELS BOTONS --- */
-#btnSaluda, #btnAfegir, #btnToggleTaula {
-  background-color: var(--color-boto); 
-  width: 140px;
-  height: 40px;
-  display: block;
-  margin: 6px auto;
-  border: 1px solid var(--color-borde);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: box-shadow 0.3s ease;
+
+/* Barra horitzontal amb els tres botons secundaris */
+.barra-botons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 6px 0 10px;
 }
 
-#btnSaluda:hover, #btnAfegir:hover, #btnToggleTaula:hover, #buzon:hover, .btn-eliminar:hover, .btn-editar:hover {
-  box-shadow: -2px 10px 40px gray;
+#btnSaluda, #btnAfegir, #btnToggleTaula {
+  background-color: var(--color-boto);
+  color: var(--color-principal);
+  font-family: inherit;
+  font-weight: 600;
+  width: 150px;
+  height: 40px;
+  display: block;
+  margin: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radi-petit);
+  cursor: pointer;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, color 0.25s ease,
+              background-color 0.3s ease, transform 0.25s ease;
+}
+
+#btnSaluda:hover, #btnAfegir:hover, #btnToggleTaula:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: var(--ombra-mitja);
+  transform: translateY(-1px);
 }
 
 .btn-eliminar,
@@ -224,10 +408,13 @@ section:first-child {
 .btn-cancelar {
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  transition: box-shadow 0.25s ease, background-color 0.25s ease;
 }
 
 .btn-eliminar {
@@ -236,7 +423,7 @@ section:first-child {
 
 .btn-eliminar:hover {
   background-color: var(--color-btn-eliminar-hover);
-  box-shadow: -2px 10px 40px var(--color-btn-eliminar-hover);
+  box-shadow: 0 6px 16px -4px rgba(190, 58, 58, 0.5);
 }
 
 .btn-editar,
@@ -247,15 +434,15 @@ section:first-child {
 .btn-editar:hover,
 .btn-desar:hover {
   background-color: var(--color-btn-editar-hover);
-  box-shadow: -2px 10px 40px var(--color-btn-editar-hover);
+  box-shadow: 0 6px 16px -4px rgba(2, 132, 199, 0.5);
 }
 
 .btn-cancelar {
-  background-color: #7f8c8d;
+  background-color: var(--color-btn-cancelar);
 }
 
 .btn-cancelar:hover {
-  background-color: #95a5a6;
+  background-color: var(--color-btn-cancelar-hover);
 }
 
 /* Botons deshabilitats mentre hi ha una petició en curs */
@@ -263,40 +450,48 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   box-shadow: none;
+  transform: none;
+}
+
+/* Focus visible per a navegació amb teclat */
+button:focus-visible {
+  outline: 3px solid var(--color-anell-focus);
+  outline-offset: 2px;
 }
 
 /* --- 5b. FORMULARI D'EDICIÓ INLINE --- */
 .form-edicio {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .form-edicio label {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-principal);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text-suau);
 }
 
 .camp-edicio {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-borde);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.95rem;
-  background-color: #faf9f6;
-  color: #333;
+  background-color: var(--color-fons-camp);
+  color: var(--color-text);
 }
 
 .camp-edicio:focus {
   outline: none;
-  border-color: var(--color-principal);
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.12);
+  border-color: var(--color-accent);
+  background-color: var(--color-fons-focus);
+  box-shadow: 0 0 0 3px var(--color-anell-focus);
 }
 
 textarea.camp-edicio {
@@ -310,7 +505,7 @@ textarea.camp-edicio {
 
 /* --- 6. ESTILS DE LA TAULA I TRUNCAT DE TEXT --- */
 #seccioTaula {
-  max-height: 200px;
+  max-height: 240px;
   overflow-y: auto;
 }
 
@@ -319,20 +514,23 @@ textarea.camp-edicio {
   border-collapse: collapse;
   margin-top: 10px;
   background-color: var(--color-fons-carta);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
+  box-shadow: var(--ombra-suau);
+  border-radius: var(--radi-petit);
   overflow: hidden;
 }
 
 #taulaCartes th, #taulaCartes td {
   border: 1px solid var(--color-taula-borde);
-  padding: 8px;
+  padding: 10px;
   text-align: left;
 }
 
 #taulaCartes th {
-  background-color: var(--color-principal);
-  color: white;
+  background-color: var(--color-capcalera-taula);
+  color: var(--color-text-capcalera);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 #taulaCartes tbody tr:nth-child(even) {
@@ -356,15 +554,21 @@ textarea.camp-edicio {
   bottom: 20px;
   right: 20px;
   color: white;
-  padding: 16px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  padding: 14px 16px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.55);
   z-index: 1000;
-  background-color: var(--color-buzon); 
-  transition: box-shadow 0.3s ease;
+  background-color: var(--color-accent);
+  transition: box-shadow 0.25s ease, background-color 0.25s ease, transform 0.25s ease;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+#buzon:hover {
+  background-color: var(--color-accent-hover);
+  box-shadow: 0 12px 30px -6px rgba(2, 132, 199, 0.7);
+  transform: translateY(-2px);
 }
 
 /* Pseudo-element ::after per afegir un segell al buzón */
@@ -378,9 +582,15 @@ textarea.camp-edicio {
 
 footer {
   text-align: center;
-  text-decoration: underline;
+  color: var(--color-text-suau);
+  font-size: 0.9rem;
   margin-top: 20px;
-  padding: 10px 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--color-borde);
+}
+
+footer p {
+  margin: 0;
 }
 
 /* ==========================================================================
@@ -432,8 +642,19 @@ footer {
     padding-bottom: 80px;
   }
 
+  /* Més espai a dalt perquè el botó de tema no es solapi amb el títol */
+  header {
+    padding-top: 52px;
+  }
+
+  #btnTema {
+    top: 6px;
+    right: 0;
+    height: 40px;
+  }
+
   h1 {
-    font-size: 1.6rem;
+    font-size: 1.9rem;
   }
 
   section {
@@ -446,9 +667,10 @@ footer {
     margin: 5px 0;
   }
 
-  /* Formulari: camps i botons al 100% */
+  /* Formulari: una sola columna */
   #formCarta {
-    padding: 12px 0;
+    grid-template-columns: 1fr;
+    padding: 14px;
   }
 
   #formCarta input[type="text"],
@@ -456,13 +678,21 @@ footer {
     font-size: 1rem; /* evita el zoom automàtic a iOS */
   }
 
-  #formCarta button[type="submit"],
+  #formCarta button[type="submit"] {
+    height: 44px; /* àrea tàctil còmoda */
+  }
+
+  /* Barra de botons: en columna i a tota l'amplada */
+  .barra-botons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   #btnSaluda,
   #btnAfegir,
   #btnToggleTaula {
     width: 100%;
-    align-self: stretch;
-    height: 44px; /* àrea tàctil còmoda */
+    height: 44px;
   }
 
   /* Botons d'acció de les cartes més fàcils de tocar */
@@ -495,6 +725,10 @@ footer {
     transform: translateX(-50%);
     padding: 10px 14px;
     font-size: 1.1rem;
-    border-radius: 8px;
+    border-radius: 10px;
+  }
+
+  #buzon:hover {
+    transform: translateX(-50%) translateY(-2px);
   }
 }
