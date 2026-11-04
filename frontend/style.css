@@ -28,8 +28,8 @@
 
   /* Botons */
   --color-boto: #ffffff;
-  --color-btn-eliminar: #be3a3a;
-  --color-btn-eliminar-hover: #9b2c2c;
+  --color-btn-eliminar: #c24545;
+  --color-btn-eliminar-hover: #a93838;
   --color-btn-editar: #0284c7;
   --color-btn-editar-hover: #0369a1;
   --color-btn-cancelar: #64748b;
@@ -50,7 +50,7 @@
    S'activa quan el JS afegeix la classe "tema-fosc" al <body>.
    Només cal redefinir les variables: tota la resta d'estils les reutilitza. */
 body.tema-fosc {
-  color-scheme: dark; /* barres de scroll i controls natius en mode fosc */
+  color-scheme: dark; /* Força controls natius i scrollbar principal al mode fosc */
 
   /* Fons i superfícies */
   --color-fons-body: #0b1220;
@@ -80,10 +80,10 @@ body.tema-fosc {
 
   /* Botons */
   --color-boto: #0f192e;
-  --color-btn-eliminar: #c24545;
-  --color-btn-eliminar-hover: #a93838;
-  --color-btn-editar: #0284c7;
-  --color-btn-editar-hover: #0369a1;
+  --color-btn-eliminar: #9b2c2c;
+  --color-btn-eliminar-hover: #be3a3a;
+  --color-btn-editar: #0369a1;
+  --color-btn-editar-hover: #0284c7;
   --color-btn-cancelar: #64748b;
   --color-btn-cancelar-hover: #7b8aa0;
 
@@ -96,7 +96,51 @@ body.tema-fosc {
   --ombra-mitja: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
 }
 
-/* --- 2. CONFIGURACIÓ GENERAL --- */
+/* --- 2. ESTILS DE LA SCROLLBAR (GLOBAL I DE LA PÀGINA) --- */
+html, body {
+  color-scheme: light; /* Predeterminat clar */
+}
+
+body.tema-fosc {
+  color-scheme: dark; /* Canvia el color natiu de la finestra al mode fosc */
+}
+
+/* Estil estàndard per a Firefox (s'aplica a nivell global) */
+html {
+  scrollbar-color: var(--color-borde) var(--color-fons-body);
+  scrollbar-width: auto;
+}
+
+/* Estil personalitzat WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: var(--color-fons-body);
+}
+
+::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  border: 2px solid var(--color-fons-body);
+  border-radius: 999px;
+  background: var(--color-borde);
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* --- 3. CONFIGURACIÓ GENERAL --- */
 * {
   box-sizing: border-box;
 }
@@ -199,17 +243,20 @@ section {
   padding: 10px;
 }
 
-/* --- 3. TARGETES DE CARTES I PSEUDO-ELEMENT ::BEFORE --- */
+/* --- 4. TARGETES DE CARTES (CSS GRID) I PSEUDO-ELEMENT ::BEFORE --- */
 #contenidorCartes {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  display: grid;
+  /* CAMBIO: min(250px, 100%) evita el desbordamiento en pantallas < 250px */
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: 20px;
+  padding: 20px;
   width: 100%;
   margin-bottom: 15px;
 }
 
+/* Aquests missatges són elements dins la graella: ocupen totes les columnes */
 .cartes-pendents, .missatge-buit, .error-missatge {
-  width: 100%;
+  grid-column: 1 / -1; /* de la primera a l'última columna */
   margin: 5px 0 10px 0;
 }
 
@@ -233,10 +280,11 @@ section {
   box-shadow: var(--ombra-suau);
   transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease,
               background-color 0.3s ease;
-  width: calc(50% - 10px);
-  margin: 5px;
   position: relative;
   overflow-wrap: anywhere; /* evita que textos llargs trenquin la targeta */
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* evita que textos llargs estirin la columna */
 }
 
 .carta h3 {
@@ -269,6 +317,11 @@ section {
   gap: 8px;
 }
 
+/* Els botons s'empenyen cap avall: totes les cartes de la fila queden alineades */
+.carta .carta-acciones {
+  margin-top: auto;
+}
+
 /* L'ID queda a l'esquerra i els botons a la dreta */
 .carta-acciones span {
   margin-right: auto;
@@ -297,7 +350,7 @@ section {
   margin: 6px 0;
 }
 
-/* --- 4. ESTILS DEL FORMULARI (compacte: graella de 2 columnes) --- */
+/* --- 5. ESTILS DEL FORMULARI (compacte: graella de 2 columnes) --- */
 #formCarta {
   background-color: var(--color-fons-carta);
   border: 1px solid var(--color-borde);
@@ -368,7 +421,7 @@ section {
   transform: translateY(-1px);
 }
 
-/* --- 5. ESTILS DELS BOTONS --- */
+/* --- 6. ESTILS DELS BOTONS --- */
 
 /* Barra horitzontal amb els tres botons secundaris */
 .barra-botons {
@@ -459,7 +512,7 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* --- 5b. FORMULARI D'EDICIÓ INLINE --- */
+/* --- 6b. FORMULARI D'EDICIÓ INLINE --- */
 .form-edicio {
   display: flex;
   flex-direction: column;
@@ -503,7 +556,7 @@ textarea.camp-edicio {
   justify-content: flex-end;
 }
 
-/* --- 6. ESTILS DE LA TAULA I TRUNCAT DE TEXT --- */
+/* --- 7. ESTILS DE LA TAULA I TRUNCAT DE TEXT --- */
 #seccioTaula {
   max-height: 240px;
   overflow-y: auto;
@@ -548,7 +601,7 @@ textarea.camp-edicio {
   max-width: 200px;
 }
 
-/* --- 7. BUZÓN FIXAT I PSEUDO-ELEMENT ::AFTER --- */
+/* --- 8. BUZÓN FIXAT I PSEUDO-ELEMENT ::AFTER --- */
 #buzon {
   position: fixed;
   bottom: 20px;
@@ -594,10 +647,12 @@ footer p {
 }
 
 /* ==========================================================================
-   8. DISSENY RESPONSIU (MEDIA QUERIES)
+   9. DISSENY RESPONSIU (MEDIA QUERIES)
+   Les columnes de les cartes les gestiona la graella; aquí s'afina el
+   nombre de columnes per dispositiu i es força 1 columna en mòbil.
    ========================================================================== */
 
-/* --- ESCRIPTORI (min-width: 1025px): 3 columnes --- */
+/* --- ESCRIPTORI (min-width: 1025px) --- */
 @media (min-width: 1025px) {
   html, body {
     padding: 10px 40px;
@@ -608,12 +663,13 @@ footer p {
     padding: 0 20px;
   }
 
-  .carta {
-    width: calc(33.333% - 10px);
+  /* CAMBIO: auto-fill mantiene las columnas vacías y las cartas no se estiran */
+  #contenidorCartes {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
 }
 
-/* --- TAULETA (769px - 1024px): 2 columnes --- */
+/* --- TAULETA (769px - 1024px) --- */
 @media (min-width: 769px) and (max-width: 1024px) {
   html, body {
     padding: 10px 30px;
@@ -624,8 +680,9 @@ footer p {
     padding: 0 10px;
   }
 
-  .carta {
-    width: calc(50% - 10px);
+  /* CAMBIO: 2 columnas exactas en tableta */
+  #contenidorCartes {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -661,10 +718,11 @@ footer p {
     padding: 8px;
   }
 
-  /* Cartes a tota l'amplada */
-  .carta {
-    width: 100%;
-    margin: 5px 0;
+  /* Cartes: una sola columna sempre */
+  #contenidorCartes {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 8px 0;
   }
 
   /* Formulari: una sola columna */

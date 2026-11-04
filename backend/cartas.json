@@ -1,44 +1,16 @@
 [
   {
+    "id": 1,
+    "remitent": "Maria",
+    "destinatari": "Joan",
+    "contingut": "Hola, com estàs?",
+    "personatge": "Carter"
+  },
+  {
+    "id": 2,
     "remitent": "Joan",
     "destinatari": "Maria",
     "contingut": "T'escric des del passat.",
-    "personatge": "Carter",
-    "id": 2
-  },
-  {
-    "remitent": "Derick",
-    "destinatari": "Faouzi",
-    "contingut": "Un rocket?",
-    "personatge": "Faouzi",
-    "id": 3
-  },
-  {
-    "remitent": "Ali",
-    "destinatari": "Faouzi",
-    "contingut": "Un ETS? Por cierto dejame el rs6 este finde.",
-    "personatge": "Desconegut",
-    "id": 4
-  },
-  {
-    "remitent": "Victor",
-    "destinatari": "Faouzi",
-    "contingut": "Fuzziii ki dize amego!!",
-    "personatge": "Faouzi",
-    "id": 5
-  },
-  {
-    "remitent": "Jorge",
-    "destinatari": "Faouzi",
-    "contingut": "En el siguiente examen te pondré un 11. No hace falta que estudies.",
-    "personatge": "Faouzi",
-    "id": 6
-  },
-  {
-    "remitent": "Carter 6",
-    "destinatari": "Desconegut",
-    "contingut": "Aquesta carta s'acaba de crear dinàmicament!",
-    "personatge": "Desconegut",
-    "id": 7
+    "personatge": "Carter"
   }
 ]

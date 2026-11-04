@@ -196,6 +196,57 @@ export function recuperarCartaEnProces() {
 }
 
 // ---------------------------------------------------------------------------
+// NOU: Cookies
+// ---------------------------------------------------------------------------
+
+export function setCookie(nom, valor, dies) {
+  const data = new Date();
+  data.setTime(data.getTime() + dies * 24 * 60 * 60 * 1000);
+  document.cookie = `${nom}=${encodeURIComponent(valor)}; expires=${data.toUTCString()}; path=/; SameSite=Lax`;
+}
+
+export function getCookie(nom) {
+  const trobada = document.cookie
+    .split("; ")
+    .find((fila) => fila.startsWith(nom + "="));
+  return trobada ? decodeURIComponent(trobada.substring(nom.length + 1)) : null;
+}
+
+export function esborrarCookie(nom) {
+  document.cookie = `${nom}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+}
+
+// ---------------------------------------------------------------------------
+// NOU: Usuari (cookie + localStorage)
+// ---------------------------------------------------------------------------
+
+export function generarIdUsuari() {
+  return "user_" + Math.random().toString(36).substring(2, 10);
+}
+
+export function mostrarBenvinguda(usuariId) {
+  const element = document.querySelector("#benvinguda");
+  if (element) element.textContent = `Benvingut de nou, ${usuariId}!`;
+}
+
+export function inicialitzarUsuari() {
+  const existent = getCookie("usuari_id");
+  if (existent) {
+    mostrarBenvinguda(existent);
+    return existent;
+  }
+  const nou = generarIdUsuari();
+  setCookie("usuari_id", nou, 30);        // cookie de 30 dies
+  localStorage.setItem("usuariId", nou);  // còpia a localStorage
+  return nou;
+}
+
+export function esborrarCarnet() {
+  esborrarCookie("usuari_id");
+  location.reload();
+}
+
+// ---------------------------------------------------------------------------
 // Edició inline
 // ---------------------------------------------------------------------------
 
@@ -426,6 +477,14 @@ function actualitzarVistes(cartes) {
 // ---------------------------------------------------------------------------
 
 function inicialitzar() {
+  // NOU: usuari (cookie + localStorage) i botó per esborrar el carnet
+  inicialitzarUsuari();
+  const btnEsborrarCarnet = document.querySelector("#btnEsborrarCarnet");
+  if (btnEsborrarCarnet) {
+    btnEsborrarCarnet.type = "button";
+    btnEsborrarCarnet.addEventListener("click", esborrarCarnet);
+  }
+
   // Tema: aplica el tema guardat i enllaça el botó
   aplicarTemaGuardat();
   const btnTema = document.querySelector("#btnTema");
@@ -450,7 +509,7 @@ function inicialitzar() {
 
   const titol = document.querySelector("#titolPrincipal");
   if (titol) {
-    titol.textContent = "📮 El Cartero Invisible – Setmana 5";
+    titol.textContent = "📮 El Cartero Invisible – Setmana 7";
     titol.setAttribute("data-role", "banner");
   }
 
@@ -503,7 +562,8 @@ function inicialitzar() {
         remitent: remitent,
         destinatari: destinatari || "Desconegut",
         contingut: contingut,
-        personatge: personatge || "Desconegut"
+        personatge: personatge || "Desconegut",
+        usuari_id: getCookie("usuari_id") // NOU: associa la carta a l'usuari
       });
 
       if (resultat === true) {
@@ -534,7 +594,8 @@ function inicialitzar() {
         remitent: "Carter " + numero,
         destinatari: "Desconegut",
         contingut: "Aquesta carta s'acaba de crear dinàmicament!",
-        personatge: "Desconegut"
+        personatge: "Desconegut",
+        usuari_id: getCookie("usuari_id") // NOU
       });
 
       if (resultat === true) {
