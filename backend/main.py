@@ -3,7 +3,7 @@ import os
 from typing import List, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, status
+from fastapi import Cookie, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -57,6 +57,7 @@ class CartaCreate(BaseModel):
     destinatari: Optional[str] = ""
     contingut: str
     personatge: Optional[str] = "Desconegut"
+    usuari_id: Optional[str] = None
 
 
 class Carta(CartaCreate):
@@ -79,6 +80,36 @@ def config():
         "gemini_model": GEMINI_MODEL,
     }
 
+
+# Endpoint POST /login: el servidor estableix la cookie d'usuari
+@app.post("/login", status_code=status.HTTP_200_OK)
+def login(nom_usuari: str, response: Response):
+    response.set_cookie(
+        key="usuari_id",
+        value=nom_usuari,
+        max_age=30 * 24 * 60 * 60,  # 30 dies
+        httponly=True,
+        samesite="lax",
+    )
+    return {"missatge": "Sessió iniciada", "usuari_id": nom_usuari}
+
+
+# Endpoint GET /perfil: llegeix la cookie i retorna les cartes de l'usuari
+@app.get("/perfil", status_code=status.HTTP_200_OK)
+def perfil(usuari_id: Optional[str] = Cookie(default=None)):
+    if not usuari_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="No hi ha sessió"
+        )
+    cartes = [c for c in cargar_cartes() if c.get("usuari_id") == usuari_id]
+    return {"usuari_id": usuari_id, "cartes": cartes}
+
+
+# Endpoint POST /logout: Elimina la cookie d'usuari
+@app.delete("/logout")
+def logout(response: Response):
+    response.delete_cookie(key="usuari_id", path="/")   # la caduca automàticament
+    return {"missatge": "Sessió tancada"}
 
 # Endpoint GET /cartas (amb paginació opcional i filtratge)
 @app.get("/cartas", status_code=status.HTTP_200_OK)
@@ -116,10 +147,18 @@ def obtenir_carta(id: int):
 
 
 # Endpoint POST /cartas (status 201 Created)
+# Si hi ha cookie "usuari_id", la carta s'associa a aquest usuari;
+# si no, es manté l'usuari_id que enviï el frontend al cos (si n'hi ha).
 @app.post("/cartas", status_code=status.HTTP_201_CREATED)
-def crear_carta(carta_input: CartaCreate):
+def crear_carta(
+    carta_input: CartaCreate,
+    usuari_id: Optional[str] = Cookie(default=None),
+):
     cartes = cargar_cartes()
     nova_carta = carta_input.model_dump()
+
+    if usuari_id:
+        nova_carta["usuari_id"] = usuari_id
 
     existing_ids = [
         c["id"] for c in cartes if "id" in c and isinstance(c["id"], int)
@@ -144,6 +183,10 @@ def actualitzar_carta(id: int, carta_input: CartaCreate):
 
     carta_actualitzada = carta_input.model_dump()
     carta_actualitzada["id"] = id  # L'ID no es pot canviar
+    # Conserva l'usuari propietari si l'edició no n'envia cap
+    carta_actualitzada["usuari_id"] = (
+        carta_input.usuari_id or cartes[index].get("usuari_id")
+    )
 
     cartes[index] = carta_actualitzada
     guardar_cartes(cartes)

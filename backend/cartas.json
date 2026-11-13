@@ -12,5 +12,37 @@
     "destinatari": "Maria",
     "contingut": "T'escric des del passat.",
     "personatge": "Carter"
+  },
+  {
+    "remitent": "Ali",
+    "destinatari": "Faouzi",
+    "contingut": "Un roquet de mar?",
+    "personatge": "Faouzi",
+    "usuari_id": "user_jn2p4qur",
+    "id": 3
+  },
+  {
+    "remitent": "Melqui",
+    "destinatari": "Faouzi",
+    "contingut": "Esta bien chida tu pagina wey",
+    "personatge": "Faouzi",
+    "usuari_id": "user_jn2p4qur",
+    "id": 4
+  },
+  {
+    "remitent": "Derick",
+    "destinatari": "Faouzi",
+    "contingut": "Un rocket?",
+    "personatge": "Faouzi",
+    "usuari_id": "user_jn2p4qur",
+    "id": 5
+  },
+  {
+    "remitent": "Carter 6",
+    "destinatari": "Desconegut",
+    "contingut": "Aquesta carta s'acaba de crear dinàmicament!",
+    "personatge": "Desconegut",
+    "usuari_id": "user_jn2p4qur",
+    "id": 6
   }
 ]

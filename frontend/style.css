@@ -201,6 +201,35 @@ header {
   transform: translateY(-1px);
 }
 
+/* Benvinguda i botó d'esborrar carnet (capçalera) */
+#benvinguda {
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: var(--color-text-suau);
+}
+
+#benvinguda:empty {
+  display: none;
+}
+
+#btnEsborrarCarnet {
+  background-color: var(--color-boto);
+  color: var(--color-btn-eliminar);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radi-petit);
+  cursor: pointer;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.3s ease;
+}
+
+#btnEsborrarCarnet:hover {
+  border-color: var(--color-btn-eliminar);
+  box-shadow: var(--ombra-suau);
+}
+
 /* Etiqueta petita en majúscules sobre el títol */
 .eyebrow {
   margin: 0 0 6px;
@@ -246,7 +275,7 @@ section {
 /* --- 4. TARGETES DE CARTES (CSS GRID) I PSEUDO-ELEMENT ::BEFORE --- */
 #contenidorCartes {
   display: grid;
-  /* CAMBIO: min(250px, 100%) evita el desbordamiento en pantallas < 250px */
+  /* min(250px, 100%) evita el desbordament en pantalles < 250px */
   grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   gap: 20px;
   padding: 20px;
@@ -507,7 +536,8 @@ button:disabled {
 }
 
 /* Focus visible per a navegació amb teclat */
-button:focus-visible {
+button:focus-visible,
+#buzon:focus-visible {
   outline: 3px solid var(--color-anell-focus);
   outline-offset: 2px;
 }
@@ -601,21 +631,47 @@ textarea.camp-edicio {
   max-width: 200px;
 }
 
-/* --- 8. BUZÓN FIXAT I PSEUDO-ELEMENT ::AFTER --- */
+/* --- 8. BUZÓN FIXAT AMB CSS GRID (grid-template-areas) ---
+   Plànol del buzón (3 columnes x 4 files):
+
+       ┌─────────┬─────────┬─────────┐
+       │ segell  │  estat (manual)   │   "Nova carta!" amb grid-column/grid-row
+       ├─────────┴─────────┼─────────┤
+       │      sobre        │  text   │
+       ├───────────────────┴─────────┤
+       │          obertura           │   ranura de la bústia
+       ├─────────────────────────────┤
+       │           visites           │   comptador de visites (cookie)
+       └─────────────────────────────┘
+*/
 #buzon {
+  /* Es manté fixat a la cantonada */
   position: fixed;
   bottom: 20px;
   right: 20px;
-  color: white;
-  padding: 14px 16px;
-  border-radius: 14px;
-  box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.55);
   z-index: 1000;
+
+  /* Contenidor Grid amb el plànol */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto auto auto;
+  grid-template-areas:
+    "segell   .        ."
+    "sobre    sobre    text"
+    "obertura obertura obertura"
+    "visites  visites  visites";
+  align-items: center;
+  gap: 4px 8px;
+
+  width: 160px;
+  padding: 10px 12px 12px;
+  border-radius: 16px;
   background-color: var(--color-accent);
-  transition: box-shadow 0.25s ease, background-color 0.25s ease, transform 0.25s ease;
-  border: none;
-  font-size: 1.5rem;
+  color: var(--color-fons-body); /* bon contrast en tema clar i fosc */
+  box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.55);
   cursor: pointer;
+  user-select: none;
+  transition: box-shadow 0.25s ease, background-color 0.25s ease, transform 0.25s ease;
 }
 
 #buzon:hover {
@@ -624,13 +680,99 @@ textarea.camp-edicio {
   transform: translateY(-2px);
 }
 
-/* Pseudo-element ::after per afegir un segell al buzón */
-#buzon::after {
-  content: "🏷️";
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  font-size: 0.9rem;
+/* Cada element a la seva àrea */
+#buzon .segell {
+  grid-area: segell;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+#buzon .sobre {
+  grid-area: sobre;
+  font-size: 1.9rem;
+  line-height: 1;
+  justify-self: start;
+  transition: transform 0.25s ease;
+}
+
+#buzon:hover .sobre {
+  transform: translateY(3px) rotate(-6deg); /* el sobre "cau" cap a la ranura */
+}
+
+#buzon .text {
+  grid-area: text;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#buzon .obertura {
+  grid-area: obertura;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Posicionament MANUAL amb grid-column / grid-row:
+   el text d'estat ocupa dues columnes (2 i 3) de la primera fila */
+#buzon .estat {
+  grid-column: 2 / span 2;
+  grid-row: 1;
+  justify-self: end;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: var(--color-fons-carta);
+  color: var(--color-accent);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: pols-estat 2s ease-in-out infinite;
+}
+
+/* Comptador de visites: ocupa la 4a fila sencera del grid */
+#buzon #visites {
+  grid-area: visites;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin: 4px 0 0;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(8, 35, 64, 0.85);
+  color: #8fd8ff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px rgba(143, 216, 255, 0.25);
+}
+
+#buzon #visites::before {
+  content: "👁️";
+  font-size: 0.95em;
+}
+
+#buzon #visites strong {
+  color: #ffffff;
+  font-size: 1.1em;
+}
+
+@keyframes pols-estat {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #buzon .estat {
+    animation: none;
+  }
 }
 
 footer {
@@ -663,7 +805,7 @@ footer p {
     padding: 0 20px;
   }
 
-  /* CAMBIO: auto-fill mantiene las columnas vacías y las cartas no se estiran */
+  /* auto-fill manté les columnes buides i les cartes no s'estiren */
   #contenidorCartes {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
@@ -680,7 +822,7 @@ footer p {
     padding: 0 10px;
   }
 
-  /* CAMBIO: 2 columnas exactas en tableta */
+  /* 2 columnes exactes en tauleta */
   #contenidorCartes {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -696,7 +838,7 @@ footer p {
     max-width: 100%;
     padding: 0;
     /* espai perquè el buzón fix no tapi el peu de pàgina */
-    padding-bottom: 80px;
+    padding-bottom: 120px;
   }
 
   /* Més espai a dalt perquè el botó de tema no es solapi amb el títol */
@@ -775,15 +917,15 @@ footer p {
     max-width: 120px;
   }
 
-  /* Buzón: més petit i centrat a la part inferior */
+  /* Buzón: segueix sent un grid, però centrat a la part inferior */
   #buzon {
     right: auto;
     left: 50%;
     bottom: 10px;
     transform: translateX(-50%);
-    padding: 10px 14px;
-    font-size: 1.1rem;
-    border-radius: 10px;
+    width: 160px;
+    padding: 8px 10px 10px;
+    border-radius: 14px;
   }
 
   #buzon:hover {

@@ -16,6 +16,10 @@
       <h1 id="titolPrincipal">El Cartero Invisible</h1>
       <!-- Botó per canviar entre tema clar i fosc -->
       <button id="btnTema" type="button">🌓 Canviar tema</button>
+
+      <!-- Missatge de benvinguda i botó per esborrar el carnet d'usuari -->
+      <p id="benvinguda"></p>
+      <button id="btnEsborrarCarnet" type="button">Esborrar carnet</button>
     </header>
 
     <main>
@@ -60,7 +64,15 @@
         </table>
       </section>
 
-      <button id="buzon">📬</button>
+      <!-- Buzón fix a la cantonada, maquetat amb CSS Grid (grid-template-areas) -->
+      <div id="buzon" role="button" tabindex="0" aria-label="Buzón">
+        <span class="segell" aria-hidden="true">📮</span>
+        <span class="estat">Nova carta!</span>
+        <span class="sobre" aria-hidden="true">✉️</span>
+        <span class="text">Buzón</span>
+        <span class="obertura" aria-hidden="true"></span>
+        <p id="visites">Visites: <strong id="visitesNum">0</strong></p>
+      </div>
 
     </main>
 

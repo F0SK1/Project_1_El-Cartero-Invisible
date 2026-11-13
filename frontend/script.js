@@ -1,4 +1,5 @@
 const API_URL = "http://127.0.0.1:8000/cartas";
+const PERFIL_URL = "http://127.0.0.1:8000/perfil/json";
 
 // Últimes cartes rebudes del servidor (per numerar les cartes de prova)
 let cartesActuals = [];
@@ -154,6 +155,27 @@ function saluda() {
 }
 
 // ---------------------------------------------------------------------------
+// Comptador de visites (el servidor incrementa la cookie `visites`)
+// ---------------------------------------------------------------------------
+
+// Fa GET /perfil/json: el servidor suma 1 a la cookie i en retorna el valor
+export async function carregarVisites() {
+  try {
+    const response = await fetch(PERFIL_URL, { credentials: "include" });
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    const dades = await response.json();
+    const element = document.querySelector("#visitesNum");
+    if (element) element.textContent = dades.visites;
+    return dades.visites;
+  } catch (error) {
+    console.error("Error en carregar el comptador de visites:", error);
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Tema clar / fosc (localStorage)
 // ---------------------------------------------------------------------------
 
@@ -196,7 +218,7 @@ export function recuperarCartaEnProces() {
 }
 
 // ---------------------------------------------------------------------------
-// NOU: Cookies
+// Cookies
 // ---------------------------------------------------------------------------
 
 export function setCookie(nom, valor, dies) {
@@ -217,7 +239,7 @@ export function esborrarCookie(nom) {
 }
 
 // ---------------------------------------------------------------------------
-// NOU: Usuari (cookie + localStorage)
+// Usuari (cookie + localStorage)
 // ---------------------------------------------------------------------------
 
 export function generarIdUsuari() {
@@ -477,12 +499,17 @@ function actualitzarVistes(cartes) {
 // ---------------------------------------------------------------------------
 
 function inicialitzar() {
-  // NOU: usuari (cookie + localStorage) i botó per esborrar el carnet
+  // Usuari (cookie + localStorage) i botó per esborrar el carnet
   inicialitzarUsuari();
   const btnEsborrarCarnet = document.querySelector("#btnEsborrarCarnet");
   if (btnEsborrarCarnet) {
     btnEsborrarCarnet.type = "button";
     btnEsborrarCarnet.addEventListener("click", esborrarCarnet);
+  }
+
+  // Comptador de visites (només si existeix l'element #visitesNum a la pàgina)
+  if (document.querySelector("#visitesNum")) {
+    carregarVisites();
   }
 
   // Tema: aplica el tema guardat i enllaça el botó
@@ -509,7 +536,7 @@ function inicialitzar() {
 
   const titol = document.querySelector("#titolPrincipal");
   if (titol) {
-    titol.textContent = "📮 El Cartero Invisible – Setmana 7";
+    titol.textContent = "📮 El Cartero Invisible – Setmana 9";
     titol.setAttribute("data-role", "banner");
   }
 
@@ -563,7 +590,7 @@ function inicialitzar() {
         destinatari: destinatari || "Desconegut",
         contingut: contingut,
         personatge: personatge || "Desconegut",
-        usuari_id: getCookie("usuari_id") // NOU: associa la carta a l'usuari
+        usuari_id: getCookie("usuari_id") // associa la carta a l'usuari
       });
 
       if (resultat === true) {
@@ -582,7 +609,6 @@ function inicialitzar() {
     });
   }
 
-  // Enllaç del botó #btnAfegir per activar l'enviament del formulari #formCarta
   // Botó #btnAfegir: afegeix una carta de prova (com a la setmana 3)
   const btnAfegir = document.querySelector("#btnAfegir");
   if (btnAfegir) {
@@ -595,7 +621,7 @@ function inicialitzar() {
         destinatari: "Desconegut",
         contingut: "Aquesta carta s'acaba de crear dinàmicament!",
         personatge: "Desconegut",
-        usuari_id: getCookie("usuari_id") // NOU
+        usuari_id: getCookie("usuari_id")
       });
 
       if (resultat === true) {
