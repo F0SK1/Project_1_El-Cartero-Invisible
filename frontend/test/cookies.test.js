@@ -1,4 +1,4 @@
-import { getCookie, setCookie, esborrarCookie } from '../script.js';
+import { getCookie, setCookie, esborrarCookie } from '../js/script.js';
 
 beforeEach(() => {
     esborrarCookie('usuari_id');
