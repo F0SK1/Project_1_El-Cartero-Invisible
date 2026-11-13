@@ -31,6 +31,6 @@ cartero-invisible/
     ├── assets/              # Recursos estàtics
     ├── css/style.css        # Variables CSS, tema fosc, Grid avançat i responsive
     ├── js/script.js         # Lògica CRUD, storage i gestió de cookies
-    ├── index.html           # Estructura semàntica
+    ├── html/index.html           # Estructura semàntica
     ├── package.json         # Dependències de Node.js (Jest)
     └── tests/               # Tests del client (setup.js, cookies.test.js)
