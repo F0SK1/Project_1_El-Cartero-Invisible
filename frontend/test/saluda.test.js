@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { fireEvent } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import { renderitzarCartes } from '../script.js';
+import { renderitzarCartes } from '../js/script.js';
 
 describe('Suite de Proves Frontend - Interfície UI', () => {
 

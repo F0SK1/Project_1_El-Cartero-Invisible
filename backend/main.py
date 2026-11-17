@@ -5,7 +5,7 @@ from typing import List, Optional
 from dotenv import load_dotenv
 from fastapi import Cookie, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # 1. Carregar les variables d'entorn des del fitxer .env
 load_dotenv()
@@ -52,16 +52,33 @@ def guardar_cartes(cartes: List[dict]) -> None:
 
 
 # Models Pydantic
+# Field(min_length=1) fa que Pydantic rebutgi els camps buits amb un 422 automàtic.
 class CartaCreate(BaseModel):
-    remitent: str
-    destinatari: Optional[str] = ""
-    contingut: str
-    personatge: Optional[str] = "Desconegut"
+    remitent: str = Field(min_length=1)
+    destinatari: str = Field(min_length=1)
+    contingut: str = Field(min_length=1)
+    personatge: str = Field(min_length=1)
     usuari_id: Optional[str] = None
 
 
 class Carta(CartaCreate):
     id: int
+
+
+# Validació addicional (més enllà de Pydantic): cap camp pot ser només espais en blanc
+def validar_carta(carta: CartaCreate) -> None:
+    camps = {
+        "remitent": carta.remitent,
+        "destinatari": carta.destinatari,
+        "contingut": carta.contingut,
+        "personatge": carta.personatge,
+    }
+    for nom, valor in camps.items():
+        if not valor.strip():
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=f"El camp '{nom}' no pot estar buit",
+            )
 
 
 @app.get("/")
@@ -105,11 +122,12 @@ def perfil(usuari_id: Optional[str] = Cookie(default=None)):
     return {"usuari_id": usuari_id, "cartes": cartes}
 
 
-# Endpoint POST /logout: Elimina la cookie d'usuari
+# Endpoint DELETE /logout: elimina la cookie d'usuari
 @app.delete("/logout")
 def logout(response: Response):
     response.delete_cookie(key="usuari_id", path="/")   # la caduca automàticament
     return {"missatge": "Sessió tancada"}
+
 
 # Endpoint GET /cartas (amb paginació opcional i filtratge)
 @app.get("/cartas", status_code=status.HTTP_200_OK)
@@ -134,19 +152,20 @@ def llistar_cartes(
     return cartes_filtrades[offset:]
 
 
-# Endpoint GET /cartas/{id}
+# Endpoint GET /cartas/{id}: 404 si no existeix
 @app.get("/cartas/{id}", status_code=status.HTTP_200_OK)
 def obtenir_carta(id: int):
     cartes = cargar_cartes()
     carta = next((c for c in cartes if c.get("id") == id), None)
-    if not carta:
+    if carta is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Carta no trobada"
         )
     return carta
 
 
-# Endpoint POST /cartas (status 201 Created)
+# Endpoint POST /cartas (201 Created)
+# 422 si les dades són invàlides (Pydantic + validació addicional).
 # Si hi ha cookie "usuari_id", la carta s'associa a aquest usuari;
 # si no, es manté l'usuari_id que enviï el frontend al cos (si n'hi ha).
 @app.post("/cartas", status_code=status.HTTP_201_CREATED)
@@ -154,6 +173,8 @@ def crear_carta(
     carta_input: CartaCreate,
     usuari_id: Optional[str] = Cookie(default=None),
 ):
+    validar_carta(carta_input)
+
     cartes = cargar_cartes()
     nova_carta = carta_input.model_dump()
 
@@ -170,7 +191,7 @@ def crear_carta(
     return nova_carta
 
 
-# Endpoint PUT /cartas/{id}: actualitza una carta existent
+# Endpoint PUT /cartas/{id}: 404 si no existeix, 422 si les dades són invàlides
 @app.put("/cartas/{id}", status_code=status.HTTP_200_OK)
 def actualitzar_carta(id: int, carta_input: CartaCreate):
     cartes = cargar_cartes()
@@ -180,6 +201,8 @@ def actualitzar_carta(id: int, carta_input: CartaCreate):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Carta no trobada"
         )
+
+    validar_carta(carta_input)
 
     carta_actualitzada = carta_input.model_dump()
     carta_actualitzada["id"] = id  # L'ID no es pot canviar
@@ -193,17 +216,17 @@ def actualitzar_carta(id: int, carta_input: CartaCreate):
     return carta_actualitzada
 
 
-# Endpoint DELETE /cartas/{id}
-@app.delete("/cartas/{id}", status_code=status.HTTP_200_OK)
+# Endpoint DELETE /cartas/{id}: 204 No Content (sense cos), 404 si no existeix
+@app.delete("/cartas/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_carta(id: int):
     cartes = cargar_cartes()
     carta_a_eliminar = next((c for c in cartes if c.get("id") == id), None)
 
-    if not carta_a_eliminar:
+    if carta_a_eliminar is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Carta no trobada"
         )
 
     cartes = [c for c in cartes if c.get("id") != id]
     guardar_cartes(cartes)
-    return {"missatge": "Carta eliminada", "id": id}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

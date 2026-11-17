@@ -26,15 +26,22 @@
 
       <p class="info">Benvingut al teu buzón virtual</p>
 
+      <!-- Missatge d'error accessible: només es veu amb la classe "visible" -->
+      <div id="missatgeError" aria-live="polite"></div>
+
       <!-- Contenidor on es renderitzaran dinàmicament les cartes en format targeta -->
       <div id="contenidorCartes"></div>
 
-      <!-- Formulari per crear cartes -->
+      <!-- Formulari per crear cartes (Flexbox) -->
       <form id="formCarta">
-        <input type="text" id="remitent" placeholder="El teu nom" required>
-        <input type="text" id="destinatari" placeholder="A qui va dirigida?" required>
+        <div class="fila-camps">
+          <input type="text" id="remitent" placeholder="El teu nom" required>
+          <input type="text" id="destinatari" placeholder="A qui va dirigida?" required>
+        </div>
         <textarea id="contingut" placeholder="Escriu la teva carta..." required></textarea>
-        <input type="text" id="personatge" placeholder="A quin personatge escrius? (ex: Einstein)">
+        <div class="fila-camps">
+          <input type="text" id="personatge" placeholder="A quin personatge escrius? (ex: Einstein)">
+        </div>
         <button type="submit">Enviar carta</button>
       </form>
 

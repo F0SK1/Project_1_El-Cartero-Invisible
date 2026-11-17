@@ -371,6 +371,28 @@ section {
   font-weight: 600;
 }
 
+/* Missatge d'error (només visible amb la classe "visible") */
+#missatgeError {
+  display: none;
+  background: #fdecea;
+  color: #b71c1c;
+  border: 1px solid #f5c6cb;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+#missatgeError.visible {
+  display: block;
+}
+
+/* Variant per al tema fosc */
+body.tema-fosc #missatgeError {
+  background: var(--color-error-fons);
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
 /* Indicador de càrrega */
 .indicador-carrega {
   text-align: center;
@@ -379,7 +401,7 @@ section {
   margin: 6px 0;
 }
 
-/* --- 5. ESTILS DEL FORMULARI (compacte: graella de 2 columnes) --- */
+/* --- 5. ESTILS DEL FORMULARI (Flexbox) --- */
 #formCarta {
   background-color: var(--color-fons-carta);
   border: 1px solid var(--color-borde);
@@ -389,15 +411,24 @@ section {
   margin: 10px auto 14px;
   width: 100%;
   max-width: 720px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;   /* camps apilats: cada fila és un bloc */
+  gap: 12px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Fila de camps: en fila a l'escriptori, passen a columna si no hi caben */
+.fila-camps {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 #formCarta input[type="text"],
 #formCarta textarea {
-  width: 100%;
+  flex: 1;                        /* creixen per repartir-se l'espai */
+  min-width: min(200px, 100%);    /* mai menys de 200px (sense desbordar en pantalles molt petites) */
   padding: 9px 12px;
   border: 1px solid var(--color-borde);
   border-radius: var(--radi-petit);
@@ -421,16 +452,16 @@ section {
   box-shadow: 0 0 0 3px var(--color-anell-focus);
 }
 
-/* El textarea ocupa les dues columnes i és més baix */
+/* El textarea creix per omplir l'espai vertical disponible */
 #formCarta textarea {
-  grid-column: 1 / -1;
+  flex: 1 1 80px;                 /* flex-grow, flex-shrink, flex-basis */
+  min-height: 80px;
   resize: vertical;
-  min-height: 64px;
-  height: 64px;
 }
 
-/* Botó principal: al costat del camp "personatge" */
+/* Botó d'enviament: alineat a la dreta */
 #formCarta button[type="submit"] {
+  align-self: flex-end;
   background-color: var(--color-accent);
   color: #ffffff;
   border: none;
@@ -440,7 +471,6 @@ section {
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  align-self: stretch;
   transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
@@ -867,10 +897,13 @@ footer p {
     padding: 8px 0;
   }
 
-  /* Formulari: una sola columna */
+  /* Formulari: les files passen a columna */
   #formCarta {
-    grid-template-columns: 1fr;
     padding: 14px;
+  }
+
+  .fila-camps {
+    flex-direction: column;
   }
 
   #formCarta input[type="text"],
@@ -879,7 +912,8 @@ footer p {
   }
 
   #formCarta button[type="submit"] {
-    height: 44px; /* àrea tàctil còmoda */
+    align-self: stretch; /* botó a tota l'amplada */
+    height: 44px;        /* àrea tàctil còmoda */
   }
 
   /* Barra de botons: en columna i a tota l'amplada */

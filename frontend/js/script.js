@@ -5,6 +5,113 @@ const PERFIL_URL = "http://127.0.0.1:8000/perfil/json";
 let cartesActuals = [];
 
 // ---------------------------------------------------------------------------
+// Gestió d'errors (únic lloc on es mostren errors a l'usuari)
+// ---------------------------------------------------------------------------
+
+// Error HTTP amb el codi d'estat associat
+class ErrorHTTP extends Error {
+  constructor(missatge, estat) {
+    super(missatge);
+    this.name = "ErrorHTTP";
+    this.estat = estat;
+  }
+}
+
+// Missatge per a l'usuari segons el codi d'estat HTTP.
+// "detail" és el missatge del servidor (només s'usa als 422 i al cas per defecte).
+function missatgePerCodi(codi, detail = null) {
+  const extra = typeof detail === "string" && detail.trim() !== "" ? detail : null;
+
+  switch (codi) {
+    case 400:
+      return "Petició incorrecta (400). Revisa les dades enviades.";
+    case 401:
+      return "No estàs autenticat (401). Inicia sessió per continuar.";
+    case 403:
+      return "No tens permís per fer aquesta acció (403).";
+    case 404:
+      return "La carta que busques no existeix.";
+    case 422:
+      return extra
+        ? `Les dades enviades no són vàlides: ${extra}`
+        : "Les dades enviades no són vàlides. Revisa els camps del formulari.";
+    case 500:
+      return "Error intern del servidor (500). Torna-ho a provar més tard.";
+    case 503:
+      return "El servei no està disponible (503). Torna-ho a provar més tard.";
+    default:
+      return extra || `Error inesperat del servidor (codi ${codi}).`;
+  }
+}
+
+// Retorna el div#missatgeError (si no existeix a l'HTML, el crea)
+function obtenirElementError() {
+  if (typeof document === "undefined") return null;
+  let element = document.querySelector("#missatgeError");
+  if (!element) {
+    element = document.createElement("div");
+    element.id = "missatgeError";
+    element.setAttribute("aria-live", "polite");
+    const contenidor = document.querySelector("#contenidorCartes");
+    if (contenidor && contenidor.parentNode) {
+      contenidor.parentNode.insertBefore(element, contenidor);
+    } else if (document.body) {
+      document.body.prepend(element);
+    }
+  }
+  return element;
+}
+
+// Únic lloc on es mostren errors (es fa visible amb la classe "visible")
+function mostrarError(missatge) {
+  const element = obtenirElementError();
+  if (!element) return;
+  element.textContent = missatge;
+  element.classList.add("visible");
+}
+
+function amagarError() {
+  if (typeof document === "undefined") return;
+  const element = document.querySelector("#missatgeError");
+  if (!element) return;
+  element.textContent = "";
+  element.classList.remove("visible");
+}
+
+// Comprova la resposta: si no és OK, llança un ErrorHTTP amb el missatge
+// corresponent al codi (i el "detail" del servidor quan s'hi afegeix).
+async function comprovarResposta(response) {
+  if (response.ok) return response;
+
+  let detail = null;
+  try {
+    const cos = await response.json();
+    detail = cos ? cos.detail : null;
+  } catch (_) {
+    // El cos no és JSON: s'usarà el missatge genèric
+  }
+
+  throw new ErrorHTTP(missatgePerCodi(response.status, detail), response.status);
+}
+
+// Converteix qualsevol error en un missatge per a l'usuari i el mostra
+function gestionarError(error) {
+  console.error("Error:", error);
+
+  let missatge;
+  if (error instanceof ErrorHTTP) {
+    missatge = error.message;
+  } else if (error instanceof TypeError) {
+    // fetch llança TypeError quan no hi ha connexió amb el servidor
+    missatge = "No s'ha pogut connectar al servidor. Comprova que està en marxa.";
+  } else {
+    missatge = (error && error.message) || "S'ha produït un error inesperat.";
+  }
+
+  mostrarError(missatge);
+}
+
+// ---------------------------------------------------------------------------
 // Indicador de càrrega + bloqueig de botons durant les peticions fetch
 // ---------------------------------------------------------------------------
 let peticionsEnCurs = 0;
@@ -54,36 +161,43 @@ function acabarCarrega() {
 // Peticions al backend
 // ---------------------------------------------------------------------------
 
-// Funció per carregar les cartes des del servidor backend (GET)
+// Carrega les cartes des del servidor (GET)
 async function carregarCartes() {
+  amagarError();
   iniciarCarrega();
   try {
     const response = await fetch(API_URL);
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
+    await comprovarResposta(response);
     const cartes = await response.json();
     actualitzarVistes(cartes);
     return cartes;
   } catch (error) {
-    console.error("Error en carregar les cartes des del servidor:", error);
-
-    // Actualitza el DOM amb el missatge d'error
-    const contenidor = document.querySelector("#contenidorCartes");
-    if (contenidor) {
-      contenidor.innerHTML = '<p class="error-missatge">No s\'han pogut carregar les cartes. Comprova que el servidor està en marxa.</p>';
-    }
-
-    // Mostra l'alert esperat pels tests
-    alert("No s'han pogut carregar les cartes. Comprova que el servidor està en marxa.");
+    gestionarError(error);
     return [];
   } finally {
     acabarCarrega();
   }
 }
 
-// Funció per crear una carta nova (POST)
+// Carrega una carta concreta per ID (GET /cartas/{id})
+async function carregarCartaPerId(id) {
+  amagarError();
+  iniciarCarrega();
+  try {
+    const response = await fetch(`${API_URL}/${id}`);
+    await comprovarResposta(response);
+    return await response.json();
+  } catch (error) {
+    gestionarError(error);
+    return null;
+  } finally {
+    acabarCarrega();
+  }
+}
+
+// Crea una carta nova (POST). Retorna true si ha anat bé, false si ha fallat.
 async function crearCarta(dades) {
+  amagarError();
   iniciarCarrega();
   try {
     const response = await fetch(API_URL, {
@@ -91,17 +205,23 @@ async function crearCarta(dades) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dades)
     });
-    return response.ok;
+    await comprovarResposta(response);
+    return true;
   } catch (error) {
-    console.error("Error en la petició POST:", error);
-    return null;
+    gestionarError(error);
+    return false;
   } finally {
     acabarCarrega();
   }
 }
 
-// Funció per actualitzar una carta existent (PUT)
+// Àlies amb el nom de l'enunciat
+const enviarCarta = crearCarta;
+
+// Actualitza una carta existent (PUT).
+// Llança un error si el servidor respon amb error: el gestiona qui la crida.
 async function actualitzarCarta(id, dades) {
+  amagarError();
   iniciarCarrega();
   try {
     const response = await fetch(`${API_URL}/${id}`, {
@@ -109,37 +229,28 @@ async function actualitzarCarta(id, dades) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dades)
     });
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
+    await comprovarResposta(response);
     return true;
-  } catch (error) {
-    console.error("Error en la petició PUT:", error);
-    alert("Error en actualitzar la carta al servidor.");
-    return false;
   } finally {
     acabarCarrega();
   }
 }
 
-// Funció per eliminar una carta (DELETE) i refrescar la llista
+// Elimina una carta (DELETE) i refresca la llista
 async function eliminarCarta(id) {
   if (id === undefined || id === null || id === "") return false;
 
+  amagarError();
   iniciarCarrega();
   let correcte = false;
   try {
     const response = await fetch(`${API_URL}/${id}`, {
       method: "DELETE"
     });
-    if (response.ok) {
-      correcte = true;
-    } else {
-      alert("Error en eliminar la carta del servidor.");
-    }
+    await comprovarResposta(response);
+    correcte = true;
   } catch (error) {
-    console.error("Error en la petició DELETE:", error);
-    alert("Error de connexió en eliminar la carta.");
+    gestionarError(error);
   } finally {
     acabarCarrega();
   }
@@ -162,14 +273,13 @@ function saluda() {
 export async function carregarVisites() {
   try {
     const response = await fetch(PERFIL_URL, { credentials: "include" });
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
+    await comprovarResposta(response);
     const dades = await response.json();
     const element = document.querySelector("#visitesNum");
     if (element) element.textContent = dades.visites;
     return dades.visites;
   } catch (error) {
+    // Funció secundària: només es registra a consola per no duplicar l'error de carregarCartes
     console.error("Error en carregar el comptador de visites:", error);
     return null;
   }
@@ -332,14 +442,17 @@ function mostrarFormulariEdicio(elementContenidor, carta) {
 
     // Validació: cap camp pot estar buit
     if (Object.values(dades).some((valor) => valor === "")) {
-      alert("Tots els camps són obligatoris!");
+      mostrarError("Tots els camps són obligatoris!");
       return;
     }
 
-    const correcte = await actualitzarCarta(carta.id, dades);
-    if (correcte) {
-      await carregarCartes();
+    try {
+      await actualitzarCarta(carta.id, dades);
+    } catch (error) {
+      gestionarError(error);
+      return;
     }
+    await carregarCartes();
   });
 
   // Si l'element és una fila de la taula (TR), embolcallem el formulari en un TD
@@ -469,7 +582,7 @@ function renderitzarTaula(cartes = []) {
     btnEliminar.className = "btn-eliminar";
     btnEliminar.dataset.id = carta.id;
 
-    // S'afegeix primer el deEditar i després el d'Eliminar
+    // S'afegeix primer el d'Editar i després el d'Eliminar
     tdAccions.appendChild(btnEditar);
     tdAccions.appendChild(btnEliminar);
 
@@ -581,11 +694,11 @@ function inicialitzar() {
       const personatge = personatgeInput ? personatgeInput.value.trim() : "";
 
       if (remitent === "" || contingut === "") {
-        alert("Els camps Remitent i Contingut són obligatoris!");
+        mostrarError("Els camps Remitent i Contingut són obligatoris!");
         return;
       }
 
-      const resultat = await crearCarta({
+      const correcte = await enviarCarta({
         remitent: remitent,
         destinatari: destinatari || "Desconegut",
         contingut: contingut,
@@ -593,7 +706,7 @@ function inicialitzar() {
         usuari_id: getCookie("usuari_id") // associa la carta a l'usuari
       });
 
-      if (resultat === true) {
+      if (correcte) {
         // Carta enviada correctament: desa l'últim personatge i esborra l'esborrany
         guardarUltimPersonatge(personatge);
         sessionStorage.removeItem("cartaEnProces");
@@ -601,11 +714,8 @@ function inicialitzar() {
         await carregarCartes();
         formCarta.reset();
         preomplirUltimPersonatge(); // torna a preomplir el personatge després del reset
-      } else if (resultat === false) {
-        alert("Error en enviar la carta al servidor.");
-      } else {
-        alert("Error de connexió en enviar la carta.");
       }
+      // Si ha fallat, enviarCarta ja ha cridat gestionarError()
     });
   }
 
@@ -616,7 +726,7 @@ function inicialitzar() {
     btnAfegir.addEventListener("click", async () => {
       const numero = cartesActuals.length + 1;
 
-      const resultat = await crearCarta({
+      const correcte = await enviarCarta({
         remitent: "Carter " + numero,
         destinatari: "Desconegut",
         contingut: "Aquesta carta s'acaba de crear dinàmicament!",
@@ -624,12 +734,8 @@ function inicialitzar() {
         usuari_id: getCookie("usuari_id")
       });
 
-      if (resultat === true) {
+      if (correcte) {
         await carregarCartes();
-      } else if (resultat === false) {
-        alert("Error en enviar la carta al servidor.");
-      } else {
-        alert("Error de connexió en enviar la carta.");
       }
     });
   }
@@ -647,14 +753,26 @@ if (typeof document !== 'undefined') {
   document.addEventListener("DOMContentLoaded", inicialitzar);
 }
 
+// Per poder provar des de la consola del navegador (p. ex. carregarCartaPerId(9999))
+if (typeof window !== 'undefined') {
+  window.carregarCartaPerId = carregarCartaPerId;
+}
+
 export {
   renderitzarCartes,
   renderitzarVistaCartes,
   renderitzarTaula,
   renderitzarTaulaCartes,
   carregarCartes,
+  carregarCartaPerId,
   crearCarta,
+  enviarCarta,
   actualitzarCarta,
   eliminarCarta,
-  actualitzarVistes
+  actualitzarVistes,
+  comprovarResposta,
+  missatgePerCodi,
+  gestionarError,
+  mostrarError,
+  amagarError
 };
